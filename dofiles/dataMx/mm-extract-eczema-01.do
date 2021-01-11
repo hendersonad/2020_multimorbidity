@@ -55,12 +55,12 @@ ADO FILES NEEDED: 	exca.ado
 /*******************************************************************************
 >> HOUSEKEEPING
 *******************************************************************************/
-version 16
+version 15
 clear all
 capture log close
 
 * find path file location and run it
-ecz_extract paths
+mm_extract paths
 
 * create a filename global that can be used throughout the file
 global filename "exca-extract01v2-eczema"
@@ -89,8 +89,8 @@ rungprddlg, define(1) extract(0) build(July 2017) ///
 
 
 rungprddlg, define(1) extract(0) build(July 2020) ///
-	directory(Z:\GPRD_GOLD\Ali\2020_eczema_extract\in) ///
-	studyname(ecz_extract) memorytoassign(8g) ///
+	directory(${pathIn}) ///
+	studyname(mm_extract_eczema) memorytoassign(8g) ///
 	ssta(01jan1900) send(01jan2100) gend(Male & Female) ///
 	minagetype(No restriction) maxagetype(No restriction) ///
 	priorregtype(No restriction) fuptype(No restriction) ///
@@ -238,7 +238,7 @@ cap log close // CPRD data extract will create it's own log file
 
 
 rungprddlg, define(0) extract(1) build(July 2020) directory(${pathIn}) ///
-	studyname(ecz_extract) memorytoassign(4g)
+	studyname(mm_extract_eczema) memorytoassign(4g)
 
 
 /*
