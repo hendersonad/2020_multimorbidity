@@ -55,7 +55,7 @@ capture log close
 mm_extract paths
 
 * create a filename global that can be used throughout the file
-global filename "ecz-extract-02eczemaTherapy"
+global filename "ecz-extracteczema-02Therapy"
 
 * run program file that will be used to identify prescriptions from the 
 * therapy extract and consultations from clinical extract file
@@ -120,14 +120,11 @@ save "${pathOut}/packtype", replace
 #2. Identify eczema treatment from Therapy files
 *******************d************************************************************/
 prog_identifyTherapy, ///
-	therapyfile("${pathIn}/Therapy_extract_ecz_extract") /// path and file name (minus _filenum) of extract file
+	therapyfile("${pathIn}/Therapy_extract_mm_extract_eczema") /// path and file name (minus _filenum) of extract file
 	codelist("${pathCodelists}/prodcodes-eczemaRx") ///	path and file name for prodcode list - some 1527 codes in this one
 	filenum(15) ///	number of extract files
 	dofilename($filename) /// name of this do file to include in the saved file notes
 	savefile("${pathOut}/prescriptions-eczemaRx")	// name of file to save eczema therapy prescription data to
-
-	
-	
 
 /*******************************************************************************
 #3. Identify eczema treatment from Clinical and Referral files
@@ -145,7 +142,7 @@ foreach filetype in Clinical Referral {
 	if "`filetype'"=="Referral" {
 		local nfiles=1 // update nfiles  -- usually only one 
 	} 
-	prog_getCodeCPRD, clinicalfile("${pathIn}/`filetype'_extract_ecz_extract") ///
+	prog_getCodeCPRD, clinicalfile("${pathIn}/`filetype'_extract_mm_extract_eczema") ///
 		clinicalfilesnum(`nfiles') ///
 		codelist("${pathCodelists}/medcodes-eczemaRx") /// 
 		diagnosis(eczemaRx) ///

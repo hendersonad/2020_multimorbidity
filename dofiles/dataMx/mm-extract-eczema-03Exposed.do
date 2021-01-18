@@ -58,7 +58,7 @@ capture log close
 mm_extract paths
 
 * create a filename global that can be used throughout the file
-global filename "mm-extract-03eczemaExposed"
+global filename "mm-extract-eczema-03Exposed"
 
 * open log file
 log using "${pathLogs}/${filename}", text replace
@@ -146,7 +146,7 @@ compress
 save "${pathOut}/eczemaRx-dates", replace
 
 
-unique patid // n= 2,113,877
+unique patid // n= 2,113,877 //  2114465
 
 
 
@@ -166,7 +166,7 @@ unique patid // n= 2,113,877
 * (drop patients with zero, 1 Rx or +1 Rx on same day)
 
 * first identify the date of first eczema diagnosis
-merge m:1 patid using "$pathIn/results_ecz_extract"
+merge m:1 patid using "$pathIn/results_mm_extract_eczema"
 
 
 
@@ -322,7 +322,7 @@ save "${pathOut}/eczemaExposed", replace
 
 
 
-unique patid // 1787262
+unique patid // 1788057
 
 
 

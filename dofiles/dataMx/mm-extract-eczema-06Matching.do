@@ -96,7 +96,7 @@ capture log close
 mm_extract paths
 
 * create a filename global that can be used throughout the file
-global filename "mm-extract-06matching"
+global filename "mm-extract-eczema-06matching"
 
 * open log file
 log using "${pathLogs}/${filename}", text replace
@@ -396,7 +396,7 @@ foreach cohort in multimorb {
 	tab yob if _merge==3
 	tab gender if _merge==3
 	
-	tab gender _merge if _merge != 2, cod
+	tab gender _merge if _merge != 2, col
 
 } /*end foreach cohort in cancer mortality*/
 

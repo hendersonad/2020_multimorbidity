@@ -88,7 +88,7 @@ capture log close
 mm_extract paths
 
 * create a filename global that can be used throughout the file
-global filename "mm-extract-05controlPool"
+global filename "mm-extract-eczema-05controlPool"
 
 * open log file
 log using "${pathLogs}/${filename}", text replace

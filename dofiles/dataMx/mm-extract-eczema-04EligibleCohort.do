@@ -69,7 +69,7 @@ capture log close
 mm_extract paths
 
 * create a filename global that can be used throughout the file
-global filename "mm-extract-04eczemaEligibleCohort"
+global filename "mm-extract-eczema-04EligibleCohort"
 
 * open log file
 log using "${pathLogs}/${filename}", text replace
@@ -85,12 +85,12 @@ log using "${pathLogs}/${filename}", text replace
 	eczema algorithm (and also for those with eczema Dx code only for sens analysis)
 *******************************************************************************/
 * identify individuals with an eczema diagnosis at any time
-use $pathIn/Patient_extract_ecz_extract_1, clear
+use $pathIn/Patient_extract_mm_extract_eczema_1, clear
 unique patid // n = 2378207
 
 * merge in practice information
 gen pracid=mod(patid, 1000)
-merge m:1 pracid using  $pathIn/Practice_extract_ecz_extract_1, nogen //all 130,703 matched
+merge m:1 pracid using  $pathIn/Practice_extract_mm_extract_eczema_1, nogen //all 130,703 matched
 
 label var lcd "date of last data collection from practice"
 label var uts "date practice reached CPRD quality control standards"
