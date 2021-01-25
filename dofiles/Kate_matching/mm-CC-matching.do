@@ -49,7 +49,7 @@ DATASETS CREATED:
 	
 *=========================================================================*/
 
-version 13
+version 15
 clear all
 macro drop _all
 
@@ -57,10 +57,12 @@ macro drop _all
 >> identify file locations and set any locals
 *******************************************************************************/
 * cd to location of file containing all file paths
-aki2 paths
-run aki2-pathsv2.do
+adopath + "J:\EHR-working\Ali\2020_multimorbidity"
+adopath + "J:\EHR share\ado"
 
-run prog_matching.do
+mm_extract paths
+
+run "dofiles\Kate_matching\prog_matching.do"
 
 /*
 syntax, dataset_path(string) dataset(string) ///
@@ -87,11 +89,33 @@ syntax, dataset_path(string) dataset(string) ///
 #1. Run matching program with ***2*** years 
 		- starting at 2 rather than 1 becuase had to go for 4 years in pilot
 *******************************************************************************/
-prog_matching, dataset_path($pathDataDerived\) dataset("matching") ///
-	match_sex(1) match_age(1) match_diffage(2) ///
+use "${pathOut}\expANDunexppool-main-multimorb.dta", clear
+
+rename yob yeardob
+rename gender sex
+rename exposed case
+gen pracid = mod(patid, 1000)
+
+save "${pathOut}\expANDunexppool-main-multimorb-CCmatch.dta", replace
+/*
+
+
+      0=potential |
+         control; |
+        1=exposed |      Freq.     Percent        Cum.
+------------------+-----------------------------------
+potential control |  3,739,688       88.57       88.57
+          exposed |    482,460       11.43      100.00
+------------------+-----------------------------------
+            Total |  4,222,148      100.00
+*/
+
+prog_matching, dataset_path($pathOut\) /// 
+	dataset("expANDunexppool-main-multimorb-CCmatch") ///
+	match_sex(1) match_age(1) match_diffage(5) /// 
 	match_regperiod(1) ///
 	control_minpriorreg(0) control_minfup(0) ///
-	nocontrols(10) nopractices(685) 
+	nocontrols(5) nopractices(685) 
 
 /*
 Time started matching = 11:18:12

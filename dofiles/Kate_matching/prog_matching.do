@@ -192,9 +192,13 @@ noi disp "Time ended matching = `timeend'"
 use "`dataset'_sorted", clear
 
 levelsof pracid, local(praclist)
-
-use test1 , clear
-forvalues i=2/`nopractices'  {
+tokenize `praclist'
+local minI = "`1'"
+di `minI'
+local minIplus1 = `minI' + 1
+di `minIplus1'
+use test`minI' , clear
+forvalues i=`minIplus1'/`nopractices'  {
 		cap append using test`i'
 			}		
 save "`dataset'_allpotentialmatches", replace
