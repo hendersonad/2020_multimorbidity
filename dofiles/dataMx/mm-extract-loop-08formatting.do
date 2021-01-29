@@ -36,11 +36,11 @@ log using "${pathLogs}/${filename}", text replace
 /*******************************************************************************
 >> choose study type
 *******************************************************************************/
-local study "asthma"
+local study = "eczema"
 
 cd ${pathIn}
 
-cap mkdir `study'studyCohort_readchapters
+cap mkdir `study'Cohort_readchapters
 // clear everything in this directory 
 cd `study'Cohort_readchapters
 local list : dir . files "save*"
@@ -50,19 +50,19 @@ foreach f of local list {
 cd ../
 
 filelist, dir(.) pattern("*.dta")
-keep if regexm(filename, "`study'_extract3")
+keep if regexm(filename, "mm_`study'_extract_matched")
 list filename
 
 drop if regexm(filename, "Additional")
 drop if regexm(filename, "Patient_")
 drop if regexm(filename, "Practice_")
-drop if regexm(filename, "results_`study'_extract3")
+drop if regexm(filename, "results_mm_`study'_extract_matched")
 save "${pathPostDofiles}\dataMx\myFileList.dta", replace
 
 local obs = _N
 di `obs'
 forvalues i = 1/`obs' {
-	//di `i'
+	di "`i' of `obs'"
 	use "${pathPostDofiles}\dataMx\myFileList.dta" in `i' , clear	
 	local f = filename
 	use "`f'", clear 
@@ -96,6 +96,7 @@ forvalues i = 1/`obs' {
 	cap append using "`study'Cohort_readchapters\save`i'"
 }
 save `study'_test.dta, replace
+export delimited `study'_test_excel.csv, replace
 
 cd `study'Cohort_readchapters
 local list : dir . files "save*"
