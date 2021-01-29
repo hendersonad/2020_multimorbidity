@@ -16,24 +16,24 @@ DESCRIPTION OF FILE:	Aims to identify 3 x matched cohorts for main and 2x
 						sensitivity analyses.
 						
 						Main analysis:
-							Exposed: main asthma (dx + 2xRx) definition (asthmaExposed-eligible)
-							Unexposed: censor at first asthma Dx code (controlpool.dta where cp_main_sens2==1)
+							Exposed: main `condition' (dx + 2xRx) definition (`condition'Exposed-eligible)
+							Unexposed: censor at first `condition' Dx code (controlpool.dta where cp_main_sens2==1)
 						
 						Sensitivity 1:
-							Exp: main eczmea def (asthmaExposed-eligible)
-							Unexp: censor when individuals meet main asthma def (controlpool.dta where cp_sens1==1)
+							Exp: main eczmea def (`condition'Exposed-eligible)
+							Unexp: censor when individuals meet main `condition' def (controlpool.dta where cp_sens1==1)
 							
 						Sensitivity 2:
-							Exp: asthma dx code only (asthmaExposed-eligible-Dxonly)
-							Unexpo: censor at first asthma Dx code (controlpool.dta where cp_main_sens2==1)
+							Exp: `condition' dx code only (`condition'Exposed-eligible-Dxonly)
+							Unexpo: censor at first `condition' Dx code (controlpool.dta where cp_main_sens2==1)
 						
 MORE INFORMATION:	1. Main analysis  
-						Patients with an asthma diagnosis will be included in 
-						the control pool up until their asthma diagnosis (Read code
-						for asthma), even if they don’t go on to meet the full
-						asthma definition (of diagnosis and two treatments).  
+						Patients with an `condition' diagnosis will be included in 
+						the control pool up until their `condition' diagnosis (Read code
+						for `condition'), even if they don’t go on to meet the full
+						`condition' definition (of diagnosis and two treatments).  
 					2. Sensitivity Analysis 1
-						Patients with an asthma diagnosis but without two further 
+						Patients with an `condition' diagnosis but without two further 
 						treatments are included in the control pool for the 
 						entire duration of their follow-up. 
 						Patients in the exposed cohort (diagnosis and 2 treatments) 
@@ -42,9 +42,9 @@ MORE INFORMATION:	1. Main analysis
 						The exposed patients are the same as the main 
 						analysis above.
 					3. Sensitivity Analysis 2
-						Exposed patients are asthma diagnosis only 
+						Exposed patients are `condition' diagnosis only 
 						(without the treatment criteria), and these patients are 
-						eligible to be controls, up until their asthma diagnosis.
+						eligible to be controls, up until their `condition' diagnosis.
 						
 					Variables required for matching 
 						patid:          CPRD patient id
@@ -64,19 +64,19 @@ MORE INFORMATION:	1. Main analysis
 										controls
 						yob:            year of birth
 					
-DATASETS USED:	`cohort' here is either cancer or mortality (difference is in entry dates asthma+365 for cancer, asthma dx date for mortality
-				asthmaExposed-eligible-`cohort'	// individuals eligible for FU meeting asthma definition
-				asthmaExposed-eligible-Dxonly-`cohort' // eligible people meeting Dx only asthma defintion
+DATASETS USED:	`cohort' here is either cancer or mortality (difference is in entry dates `condition'+365 for cancer, `condition' dx date for mortality
+				`condition'Exposed-eligible-`cohort'	// individuals eligible for FU meeting `condition' definition
+				`condition'Exposed-eligible-Dxonly-`cohort' // eligible people meeting Dx only `condition' defintion
 				controlpool		// a dataset of individuals eligible for 
 								// inclusion in the control pool: acceptable, eligible for linkage
 								// 18yrs+ with valid FU during study period
-								// no asthma diagnosis before start of eligibility
-								// (both dx-only asthma definition and main analysis asthma defintion)	
+								// no `condition' diagnosis before start of eligibility
+								// (both dx-only `condition' definition and main analysis `condition' defintion)	
 									
 DATASETS CREATED:	expANDunexppool-`analysis'-`cohort' // where `analysis' == main, sens1 or sens2
 														// and `cohort' == cancer or mortality (difference in entry dates for exposed)
-														// cancer cohort enter at latest of: crd+365.25, uts, study start, 18yrs, asthma dx+365.25
-														// mortality cohort enter at latest of: crd+365.25, uts, study start, 18yrs, asthma dx
+														// cancer cohort enter at latest of: crd+365.25, uts, study start, 18yrs, `condition' dx+365.25
+														// mortality cohort enter at latest of: crd+365.25, uts, study start, 18yrs, `condition' dx
 					getmatchedcohort-`analysis'-`cohort'	// all exp and unexposed matches for each analysis for both mortality and cancer cohorts
 					
 DO FILES NEEDED:	exca-paths.do
@@ -96,14 +96,14 @@ capture log close
 mm_extract paths
 
 * create a filename global that can be used throughout the file
-global filename "mm-extract-asthma-06matching"
+global filename "mm-extract-`condition'-06matching"
 
 * open log file
 log using "${pathLogs}/${filename}", text replace
 
 
 
-
+local condition = "asthma"
 
 
 /*******************************************************************************
@@ -118,14 +118,14 @@ With variables described above: patid, index, gender, startdate, enddate, expose
 
 /*******************************************************************************
 Main analysis 
-	Exposed: main asthma (dx + 2xRx) definition (asthmaExposed-eligible)
-	Unexposed: censor at first asthma Dx code (controlpool.dta where cp_main_sens2==1) ALI -- ?? 
+	Exposed: main `condition' (dx + 2xRx) definition (`condition'Exposed-eligible)
+	Unexposed: censor at first `condition' Dx code (controlpool.dta where cp_main_sens2==1) ALI -- ?? 
 Sensitivity 1:
-	Exp: main eczmea def (asthmaExposed-eligible)
-	Unexp: censor when individuals meet main asthma def (controlpool.dta where cp_sens1==1)
+	Exp: main eczmea def (`condition'Exposed-eligible)
+	Unexp: censor when individuals meet main `condition' def (controlpool.dta where cp_sens1==1)
 Sensitivity 2:
-	Exp: asthma dx code only (asthmaExposed-eligible-Dxonly)
-	Unexpo: censor at first asthma Dx code (controlpool.dta where cp_main_sens2==1)
+	Exp: `condition' dx code only (`condition'Exposed-eligible-Dxonly)
+	Unexpo: censor at first `condition' Dx code (controlpool.dta where cp_main_sens2==1)
 
 *******************************************************************************/
 foreach cohort in multimorb {
@@ -144,28 +144,28 @@ foreach cohort in multimorb {
 		------------------------------------------------------------------------------*/
 		****** #A1.1 	Identify INCIDENT cases with valid unexposed follow-up 
 		* so that they can be included in the control pool up until their
-		* asthma diagnosis
+		* `condition' diagnosis
 		
 		local cohort = "multimorb"
 		local analysis = "main"
 		
-		if "`analysis'"=="main" use ${pathOut}/asthmaExposed-eligible-`cohort', clear
-		if "`analysis'"=="sens1" use ${pathOut}/asthmaExposed-eligible-`cohort', clear
-		if "`analysis'"=="sens2" use ${pathOut}/asthmaExposed-eligible-Dxonly-`cohort', clear
+		if "`analysis'"=="main" use ${pathOut}/`condition'Exposed-eligible-`cohort', clear
+		if "`analysis'"=="sens1" use ${pathOut}/`condition'Exposed-eligible-`cohort', clear
+		if "`analysis'"=="sens2" use ${pathOut}/`condition'Exposed-eligible-Dxonly-`cohort', clear
 	 
-		* change date of end of follow up to day before date of asthma diagnosis
+		* change date of end of follow up to day before date of `condition' diagnosis
 		* Dx date will be different depending on diff analyses (main/sens1/sens2)
 		/*
-		keep if incid==1 // incid==1 if asthma Dx > eligigle start of FU (var created in extract04 #4 and #5)		
+		keep if incid==1 // incid==1 if `condition' Dx > eligigle start of FU (var created in extract04 #4 and #5)		
 	
-		if "`analysis'"=="main" replace eligibleEnd=min(asthmadateDx-1, eligibleEnd) 	// censor at first asthma code
-		if "`analysis'"=="sens1" replace eligibleEnd=min(asthmadate-1, eligibleEnd)		// censor when individuals meet main asthma def
-		if "`analysis'"=="sens2" replace eligibleEnd=min(asthmadateDx-1, eligibleEnd)	// censor at first asthma code
+		if "`analysis'"=="main" replace eligibleEnd=min(`condition'dateDx-1, eligibleEnd) 	// censor at first `condition' code
+		if "`analysis'"=="sens1" replace eligibleEnd=min(`condition'date-1, eligibleEnd)		// censor when individuals meet main `condition' def
+		if "`analysis'"=="sens2" replace eligibleEnd=min(`condition'dateDx-1, eligibleEnd)	// censor at first `condition' code
 		*/
 		* now drop any who are no longer eligible for FU due to eligibleEnd date now reset to after eligibleStart
 		drop if eligibleStart>eligibleEnd
 		
-		* temporarily save the incident asthma cases to be appended on to the 
+		* temporarily save the incident `condition' cases to be appended on to the 
 		* rest of the control pool in a mo' (i.e. at #A1.3)
 		keep patid gender dob eligible* matchDate
 		tempfile unexposedtime_preDx
@@ -184,15 +184,15 @@ foreach cohort in multimorb {
 		drop yob crd tod deathdate pracid region lcd uts 
 		
 		* identify and drop any individuals who are in the exposed cohort from the control pool
-		* by merge with asthma cohort and only keeping unmatched records from master dataset (i.e. drop records in exposed dataset only or both exposed and control pool datasets)
-		if "`analysis'"=="main" merge 1:1 patid using ${pathOut}/asthmaExposed-eligible-`cohort', keep(master) nogen keepusing(patid) // drop any in main/sens1 exp
-		if "`analysis'"=="sens1" merge 1:1 patid using ${pathOut}/asthmaExposed-eligible-`cohort', keep(master) nogen keepusing(patid) // drop any in main/sens1 exp
-		if "`analysis'"=="sens2" merge 1:1 patid using ${pathOut}/asthmaExposed-eligible-Dxonly-`cohort', keep(master) nogen keepusing(patid) // drop any in sens2 exp (i.e. diagnosis only)
+		* by merge with `condition' cohort and only keeping unmatched records from master dataset (i.e. drop records in exposed dataset only or both exposed and control pool datasets)
+		if "`analysis'"=="main" merge 1:1 patid using ${pathOut}/`condition'Exposed-eligible-`cohort', keep(master) nogen keepusing(patid) // drop any in main/sens1 exp
+		if "`analysis'"=="sens1" merge 1:1 patid using ${pathOut}/`condition'Exposed-eligible-`cohort', keep(master) nogen keepusing(patid) // drop any in main/sens1 exp
+		if "`analysis'"=="sens2" merge 1:1 patid using ${pathOut}/`condition'Exposed-eligible-Dxonly-`cohort', keep(master) nogen keepusing(patid) // drop any in sens2 exp (i.e. diagnosis only)
 
 	
 	
 	
-		******* #A1.3 	add back in any valid pre-diagnosis time for incident asthma cases
+		******* #A1.3 	add back in any valid pre-diagnosis time for incident `condition' cases
 		* add in any unexposed time for the individuals in the exposed cohort 
 		append using `unexposedtime_preDx'	
 		
@@ -220,16 +220,16 @@ foreach cohort in multimorb {
 		/*------------------------------------------------------------------------------
 		A2. Exposed
 		------------------------------------------------------------------------------*/
-		* append asthma exposed cases and flag them as exposed
-		if "`analysis'"=="main" append using ${pathOut}/asthmaExposed-eligible-`cohort', keep(patid gender dob eligibleStart eligibleEnd entry matchDate)
-		if "`analysis'"=="sens1" append using ${pathOut}/asthmaExposed-eligible-`cohort', keep(patid gender dob eligibleStart eligibleEnd entry matchDate)
-		if "`analysis'"=="sens2" append using ${pathOut}/asthmaExposed-eligible-Dxonly-`cohort', keep(patid gender dob eligibleStart eligibleEnd entry matchDate)
+		* append `condition' exposed cases and flag them as exposed
+		if "`analysis'"=="main" append using ${pathOut}/`condition'Exposed-eligible-`cohort', keep(patid gender dob eligibleStart eligibleEnd entry matchDate)
+		if "`analysis'"=="sens1" append using ${pathOut}/`condition'Exposed-eligible-`cohort', keep(patid gender dob eligibleStart eligibleEnd entry matchDate)
+		if "`analysis'"=="sens2" append using ${pathOut}/`condition'Exposed-eligible-Dxonly-`cohort', keep(patid gender dob eligibleStart eligibleEnd entry matchDate)
 
 		* flag exposed cases
 		recode exposed .=1
 		tab exposed
 		
-		* set start and end dates appropriately for asthma exposed
+		* set start and end dates appropriately for `condition' exposed
 		replace startdate=entry if exposed==1
 		replace enddate=eligibleEnd if exposed==1
 		assert startdate<=enddate 
@@ -241,8 +241,8 @@ foreach cohort in multimorb {
 		A3. Rename variables to those expected by the matching program
 		------------------------------------------------------------------------------*/
 		* indexdate var represents date of start of FU
-		rename matchDate indexdate // indexdate in this study will be latest of: crd+365, uts, asthma diagnosis, 18th birthday, study start (i.e. what is currently entry date)
-				// NB: do not confuse with the var indexdate used in early do files which represented earliest diagnostic code for asthma
+		rename matchDate indexdate // indexdate in this study will be latest of: crd+365, uts, `condition' diagnosis, 18th birthday, study start (i.e. what is currently entry date)
+				// NB: do not confuse with the var indexdate used in early do files which represented earliest diagnostic code for `condition'
 		di "Dropping if gender == 3 -----------------------------"
 		count if gender == 3
 		drop if gender==3
@@ -276,7 +276,7 @@ foreach cohort in multimorb {
 		notes: `cohort' cohort: exp + potential unexp for `analysis' analysis
 		notes: notes: ${filename} / TS
 		compress
-		save ${pathOut}/expANDunexppool-`analysis'-`cohort', replace
+		save ${pathOut}/expANDunexppool-`analysis'-`cohort'-`condition', replace
 
 	} /*end foreach analysis in main sens1 sens2*/
 
@@ -287,7 +287,7 @@ foreach cohort in multimorb {
 
 
 
-
+/* STOP HERE AND MOVE TO CC-MATCHING ALGORITHM (TIM COLLIER CODE '07CC-MATCHING')
 
 /*******************************************************************************
 ********************************************************************************
@@ -300,7 +300,7 @@ B1. IDENTIFY AGE WINDOW FOR MATCHING
 		Loop through getting matches allowing different age window to get 
 		an idea of reasonable window for age matching
 ------------------------------------------------------------------------------*/
-/*
+
 use ${pathOut}/expANDunexppool-main-multimorb, clear 
 
 forvalues years=5(5)15 {
@@ -316,7 +316,7 @@ forvalues years=5(5)15 {
 	getmatchedcohort, practice gender yob yobwindow(`years') followup ctrlsperexp(5) savedir($pathOut) dontcheck cprddb("gold")
 } /* end forvalues years=5(5)15 */
 
-*/
+
 /*------------------------------------------------------------------------------
 B2. Match
 ------------------------------------------------------------------------------*/
@@ -361,7 +361,7 @@ foreach cohort in multimorb {
 
 
 /*------------------------------------------------------------------------------
-B3. Review age and sex distribution of asthma exposed with no match vs those with
+B3. Review age and sex distribution of `condition' exposed with no match vs those with
 	a match 
 	for MAIN ANALYSIS for both cancer and mortality cohorts
 ------------------------------------------------------------------------------*/
@@ -430,7 +430,7 @@ label data "patids for all cohorts (multimorb) and all analyses"
 notes: patids for all cohorts (multimorb) and all analyses
 notes: ${filename} / TS
 compress
-save ${MMpathIn}/results_asthma_extract3, replace
+save ${MMpathIn}/results_ecz_extract3, replace
 
 count
 /*
@@ -474,7 +474,7 @@ explicitely now
 cap log close
 
 rungprddlg, define(0) extract(1) build(July 2020) directory(${MMpathIn}) ///
-	studyname(asthma_extract3) memorytoassign(4g)
+	studyname(ecz_extract3) memorytoassign(5g)
 
 
 //  obs:       282,816
@@ -489,7 +489,7 @@ rungprddlg, define(0) extract(1) build(July 2020) directory(${MMpathIn}) ///
  opened on:  30 Oct 2020, 17:20:42
 ------------------------------------------------------------------------------
       name:  <unnamed>
-       log:  Z:\GPRD_GOLD\Ali\2020_asthma_extract\in/timings.log
+       log:  Z:\GPRD_GOLD\Ali\2020_`condition'_extract\in/timings.log
   log type:  text
  opened on:  30 Oct 2020, 17:20:42
 Time of starting =                          14:25:38
@@ -521,7 +521,7 @@ Time finished erasing files =               17:20:41
 
 Time finished creating practice file =      17:20:42
       name:  <unnamed>
-       log:  Z:\GPRD_GOLD\Ali\2020_asthma_extract\in/timings.log
+       log:  Z:\GPRD_GOLD\Ali\2020_`condition'_extract\in/timings.log
   log type:  text
  closed on:  30 Oct 2020, 17:20:42
 ------------------------------------------------------------------------------
@@ -536,7 +536,4 @@ Time finished creating practice file =      17:20:42
 */
 
 
-
-
-
-
+*/

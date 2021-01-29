@@ -103,7 +103,7 @@ log using "${pathLogs}/${filename}", text replace
 
 
 
-
+local condition = "eczema"
 
 
 /*******************************************************************************
@@ -276,7 +276,7 @@ foreach cohort in multimorb {
 		notes: `cohort' cohort: exp + potential unexp for `analysis' analysis
 		notes: notes: ${filename} / TS
 		compress
-		save ${pathOut}/expANDunexppool-`analysis'-`cohort', replace
+		save ${pathOut}/expANDunexppool-`analysis'-`cohort'-`condition', replace
 
 	} /*end foreach analysis in main sens1 sens2*/
 
@@ -287,7 +287,7 @@ foreach cohort in multimorb {
 
 
 
-
+/* STOP HERE AND MOVE TO CC-MATCHING ALGORITHM (TIM COLLIER CODE '07CC-MATCHING')
 
 /*******************************************************************************
 ********************************************************************************
@@ -536,7 +536,4 @@ Time finished creating practice file =      17:20:42
 */
 
 
-
-
-
-
+*/

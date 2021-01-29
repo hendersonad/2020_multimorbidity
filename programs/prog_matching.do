@@ -1,51 +1,87 @@
+/*=========================================================================
+DO FILE NAME:	prog_matching
+
+AUTHOR:					Tim Collier - original author 		
+VERSION:				v1.0
+DATE VERSION CREATED:	16-April-2015 					
+					
+DATABASE:				CPRD July 2014 build
+						CPRD-HES version 10: 1/04/1997 to 31/3/2014
+
+DESCRIPTION OF FILE:
+	REVISED 18/08/2014: Program previosuly had practice as an optional matching factor, however 
+		the program automatically matches on practice.
+
+	REVISED 12/07/2013: Program amended to allow controls to be selected more than once.
+
+	This do file matches on practice, sex, age and registration period (controls must be active at time of case). 
+	Controls can also be excluded if don't meet minimum registration time prior/after indexdate.
+	- extra things to match on: calender time (think covered by registration period)
+	
+INSTRUCTIONS FOR USE:
+	Dataset must contain cases and all potential controls, with the following variables:
+		patid
+		pracid
+		sex
+		yeardob
+		indexdate (cases only)
+		startdate
+		enddate
+		case (1=case 0=non-case)
+		
+DATASETS USED: 		
+	$pathDataDerived/matching
+									
+DO FILES NEEDED:	aki2-pathsv2.do
+
+DATASETS CREATED:
+	`dataset_path'/`dataset'_sorted
+	`dataset_path'/`dataset'_allpotentialmatches
+	`dataset_path'/`dataset'_cases_with_no_matches
+
+Eg of how to run:
+prog_matching, dataset_path($pathDataDerived) dataset(matching) ///
+	match_sex(1) match_age(1) match_diffage(2) ///
+	match_regperiod(1) ///
+	control_minpriorreg(0) control_minfup(0) ///
+	nocontrols(10) nopractices(685) 
+	
+*=========================================================================*/
+
+
+/*******************************************************************************
+#>> Define program
+*******************************************************************************/
+cap prog drop prog_matching
+program define prog_matching
+
+syntax, dataset_path(string) dataset(string) ///
+	match_sex(integer) match_age(integer) match_diffage(integer) match_regperiod(integer) ///
+	control_minpriorreg(integer) control_minfup(integer) ///
+	nocontrols(integer) nopractices(integer) 
+	
+* dataset_path			// paths of case/control pool file and path to save output
+* dataset				// name of dataset containing all potential controls and eligible cases
+* match_sex  			// 0=no, 1=yes
+* match_age  			// 0=no, 1=yes
+* match_diffage 		// Years difference - This must be entered
+* match_regperiod		// 0=no, 1=yes
+* control_minpriorreg 	// Days controls must be registered prior to index date of case
+* control_minfup 0 		// Days controls must be registered after index date of case
+* nocontrols			// number of controls to match to every case
+* nopractices 	 		// Maximum practice ID number to check through
+
+
+
+
+
+
+/*******************************************************************************
+************************************************************
+#1. Identify num of cases without potential matches
+************************************************************
+*******************************************************************************/
 qui {
-/*
-REVISED 18/08/2014: Program previosuly had practice as an optional matching factor, however 
-the program automatically matches on practice.
-
-REVISED 12/07/2013: Program amended to allow controls to be selected more than once.
-
-This do file matches on practice, sex, age and registration period (controls must be active at time of case). 
-Controls can also be excluded if don't meet minimum registration time prior/after indexdate.
-- extra things to match on: calender time (think covered by registration period)
-
-Instructions for use:
-
-Dataset must contain cases and all potential controls, with the following variables:
-patid
-pracid
-sex
-yeardob
-indexdate (cases only)
-startdate
-enddate
-case (1=case 0=non-case)
-
-Change locals to requirements
-*/
-*********************************************************************
-
-* PATH WHERE CONTROLS:
-local dataset_path "F:\Zoster_Case_control_study\Cleaned_data/"
-local dataset "case_control_pool"
-
-local match_sex 1 /*0=no, 1=yes*/
-
-local match_age 1 /*0=no, 1=yes*/
-local match_diffage 1 /*Years difference - This must be entered*/
-
-local match_regperiod 1 /*0=no, 1=yes*/
-local control_minpriorreg 0 /*Days controls must be registered prior to index date of case*/
-local control_minfup 0 /*Days controls must be registered after index date of case*/
-
-local nocontrols 4
-
-local nopractices /*Maximum practice ID number*/
-
-*********************************************************************
-
-
-
 		noi di in green "***********************************************"
 		noi di in green "Warning, current data in memory will be erased!"
 		noi di in green "***********************************************"
@@ -156,9 +192,13 @@ noi disp "Time ended matching = `timeend'"
 use "`dataset'_sorted", clear
 
 levelsof pracid, local(praclist)
-
-use test1 , clear
-forvalues i=2/`nopractices'  {
+tokenize `praclist'
+local minI = "`1'"
+di `minI'
+local minIplus1 = `minI' + 1
+di `minIplus1'
+use test`minI' , clear
+forvalues i=`minIplus1'/`nopractices'  {
 		cap append using test`i'
 			}		
 save "`dataset'_allpotentialmatches", replace
@@ -194,6 +234,22 @@ restore
 		if "$keyentry"!="y" error 1
 		clear
 
+		
+		************************************************************
+	
+	
+	
+	
+	
+
+/*******************************************************************************
+************************************************************
+#2. Extract matches
+************************************************************
+*******************************************************************************/		
+		
+		
+
 ********************************************************/
 * Load data containing cases and all possible controls
 ********************************************************
@@ -217,12 +273,13 @@ use "`dataset'_allpotentialmatches", clear
 	save "`dataset'_allpotentialmatches_1", replace
 
 
+	
 ********************************************************
-* Next section selects up to 10 controls per case
+* Next section selects up to `nocontrols' controls per case
 * There are three loops
 * (i) Loop through each practice
 * (ii) Loop through each case in current practice
-* (iii) Loop 10 times through EACH CASE
+* (iii) Loop `nocontrols' times through EACH CASE
 
 ********************************************************
 
@@ -300,4 +357,8 @@ collapse (max)N1, by(caseid)
 nopeople caseid
 noi tab N1
 restore
-}
+
+} //end quietly
+
+
+end
