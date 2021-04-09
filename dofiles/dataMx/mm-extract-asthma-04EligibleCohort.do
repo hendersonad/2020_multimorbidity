@@ -86,7 +86,7 @@ log using "${pathLogs}/${filename}", text replace
 *******************************************************************************/
 * identify individuals with an eczema diagnosis at any time
 use $pathIn/Patient_extract_mm_extract_asthma_1, clear
-unique patid // n = 2146815
+unique patid // n = 2142854
 
 * merge in practice information
 gen pracid=mod(patid, 1000)
@@ -97,35 +97,19 @@ label var uts "date practice reached CPRD quality control standards"
 
 
 l if accept != 1
-drop if accept != 1 // 1 obs deleted
+drop if accept != 1 // 0 obs deleted
 * Identify and drop any patients with CPRD unacceptable flag	
-assert accept==1 // ALI: assertion is false 
+assert accept==1  
 
 * Add in eczema diagnosis dates (for sensitivity analysis including those
 * identified based on eczema diagosis code only)
 merge 1:1 patid using ${pathOut}\asthmaExposed, keep(match master) nogen keepusing(asthmadate) // 
+count // 2142854
 
-/*
-
-
-
-    Result                           # of obs.
-    -----------------------------------------
-    not matched                             0
-    matched                         2,146,815  
-    -----------------------------------------
-*/
-
-/*
-No need to flag individuals meeting main analysis eczema definition and those meeting sensitivity analysis Dx-code-only eczema defintion
-As those meeting full eczema definition have non-missing eczema date
-*/
-
-* add in index dates (i.e. first eczema diagnostic morbidity code) for Dx only eczema definition
-merge 1:1 patid using ${pathIn}/results_mm_extract_asthma, keepusing(indexdate) nogen //Ali: all matched
+* add in index dates (i.e. first asthma diagnostic morbidity code) for Dx only asthma definition
+merge 1:1 patid using ${pathIn}/results_mm_extract_asthma, keepusing(indexdate) nogen
 rename indexdate asthmadateDx
 label var asthmadateDx "date of first diagnostic eczema code"
-
 
 /*******************************************************************************
 #2. Identify start of eligible follow-up
@@ -164,10 +148,10 @@ label var happy18th "date 18, assumes mid year birthday if mob missing"
 drop day_birth // no longer needed
 
 * ensure relevant dates available
-drop if crd==. // 6 obs deleted
-assert crd!=.	// no missing values
-assert uts!=.			// no missing values
-assert happy18th!=.		// no missing values
+drop if crd==.
+assert crd!=.	
+assert uts!=.		
+assert happy18th!=.		
 
 * from: eligible from latest of:
 	local startdate = mdy(1,1,2016)
@@ -176,6 +160,9 @@ assert happy18th!=.		// no missing values
 gen eligibleStart = max(crd + 365.25, uts, happy18th, `startdate') 
 format eligibleStart %td 
 label var eligibleStart "latest of: crd+365.25, uts, happy18th, `startdate'"
+
+count if happy18th >  `startdate' // 383,680 child at study start
+count if crd + 365.25 >  `startdate'  // 1,296,602 not registered for 1 year before study start
 
 
 /*******************************************************************************
@@ -196,61 +183,25 @@ label var eligibleEnd "earliest of: lcd, tod, deathdate, `enddate'"
 summ(eligibleEnd)
 summ(eligibleStart)
 
+count if eligibleEnd < `startdate'
 
-
-/*******************************************************************************
-#4. Identify individuals with Dx only eczema who have eligible follow-up dates
-*******************************************************************************/
-foreach cohort in multimorb { // ALI: same conditions for both for now. this may change
-	display ""
-	display "******************************************************************"
-	display " `cohort' cohort "
-	display "******************************************************************"	
-	display ""
-	preserve
-		//if "`cohort'"=="multimorb" gen entry=max(eligibleStart, eczemadateDx)
-		//if "`cohort'"=="Mhealth" gen entry=max(eligibleStart, (eczemadateDx+365.25)) // add a year to eczema diagnosis date for cancer cohort - 12-month cancer-free interval
-		gen entry=max(eligibleStart, asthmadateDx)
-		lab var entry "latest of: asthmaDx (first code), 18th, study start, start reg)"
-		format entry %td	
-		drop if entry>=eligibleEnd //(1,532,599 observations deleted)
-		
-		gen incid=1 if asthmadateDx>eligibleStart
-		recode incid .=0
-		tab incid, miss
-		label var incid "new onset eczema after eligible for cohort entry"
-		
-		unique patid
-		
-		label data "Asthma exposed cohort - defined by Dx only `cohort' study"
-		notes: Asthma exposed cohort - defined by Dx only
-		notes: Asthma exposed for `cohort' study
-		notes: eligible for FU (based on age, eligible FU, study dates)
-		notes: ${filename} / TS
-
-		sort patid 
-		compress
-		save "${pathOut}/asthmaExposed-eligible-Dxonly-`cohort'", replace
-	restore
-
-} /*end foreach cohort in cancer mortality*/
-
-
-
-
+gen exclude1 = happy18th > `startdate' 
+gen exclude2 = crd + 365.25 >  `startdate'
+gen exclude3 = eligibleEnd < eligibleStart
+gen exclude4 = asthmadate > eligibleEnd
+gen exclude = max(exclude1,exclude2,exclude3,exclude4)
 
 /*******************************************************************************
-#5. Identify individuals with an eczema diagnosis (based on full algorithm)
+#5. Identify individuals with an asthma diagnosis (based on full algorithm)
 	who have eligible follow-up dates
 	i.e. must contribute some adult follow-up during the study period 
 	(02jan1998 to 31mar2016)
 	NB: individuals without valid adult follow-up still MUST be excluded from
 		the unexposed pool - therefore need to keep a record of these people
 *******************************************************************************/
-* drop those with eczema based on diagnosis only (i.e. no requirement for
-* 2 x therapy on separate days)
-drop if asthmadate==.
-
+preserve
+drop if asthmadate==. // 
+restore
 foreach cohort in multimorb {
 	display ""
 	display "******************************************************************"
@@ -264,13 +215,17 @@ foreach cohort in multimorb {
 		lab var entry "latest of: asthmaDx, 18th, study start, start reg)"
 		format entry %td
 
+		* check that there aren't any people with end of eligibility after start of
+		* eligibility
+		count if eligibleStart>eligibleEnd 
+		* drop these observations
+		drop if eligibleStart>eligibleEnd
+
 		***DROP patients without any follow-up during study period
+		count if entry>=eligibleEnd 
 		drop if entry>=eligibleEnd 
 		unique patid 
 
-		* check that there aren't any people with end of eligibility after start of
-		* eligibility
-		count if eligibleStart>eligibleEnd // 
 
 		/*******************************************************************************
 		#6. Flag incident/prevalent cases
@@ -303,7 +258,9 @@ foreach cohort in multimorb {
 			drop temp
 		}
 		format matchDate %td
-		label var matchDate  "latest date in 5 year window to match to control"
+		label var matchDate  "latest date in 2016-2018 year window to match to control"
+		tab matchDate, m
+		drop if matchDate == .
 		/*******************************************************************************
 		#7. label and save
 		*******************************************************************************/
@@ -317,13 +274,13 @@ foreach cohort in multimorb {
 		save "${pathOut}/asthmaExposed-eligible-`cohort'", replace
 		
 	qui count 
-	di in red r(N) //578353
+	di in red r(N) //549549
 	restore 
 
 } /*end foreach cohort in cancer mortality*/
 
 use "${pathOut}/asthmaExposed-eligible-multimorb", clear
-
+count
 
 /*
 NB: when developing pool of unexposed will need to be aware of the individuals

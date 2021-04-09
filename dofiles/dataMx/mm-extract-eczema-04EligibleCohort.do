@@ -99,7 +99,7 @@ label var uts "date practice reached CPRD quality control standards"
 l if accept != 1
 drop if accept != 1 // 1 obs deleted
 * Identify and drop any patients with CPRD unacceptable flag	
-assert accept==1 // ALI: assertion is false 
+assert accept==1 //
 
 * Add in eczema diagnosis dates (for sensitivity analysis including those
 * identified based on eczema diagosis code only)
@@ -110,12 +110,12 @@ merge 1:1 patid using ${pathOut}\eczemaExposed, keep(match master) nogen keepusi
 
     Result                           # of obs.
     -----------------------------------------
-    not matched                       590,945
-        from master                   590,945  
+    not matched                       590,150
+        from master                   590,150  
         from using                          0  
 
-    matched                         1,787,262 
-
+    matched                         1,788,057  
+    -----------------------------------------
 
 matched  1,788,057 with new prodcodes 
 */
@@ -126,7 +126,7 @@ As those meeting full eczema definition have non-missing eczema date
 */
 
 * add in index dates (i.e. first eczema diagnostic morbidity code) for Dx only eczema definition
-merge 1:1 patid using ${pathIn}/results_ecz_extract, keepusing(indexdate) nogen //Ali: all matched
+merge 1:1 patid using ${pathIn}/results_mm_extract_eczema, keepusing(indexdate) nogen //Ali: all matched
 rename indexdate eczemadateDx
 label var eczemadateDx "date of first diagnostic eczema code"
 
@@ -203,47 +203,12 @@ summ(eligibleEnd)
 summ(eligibleStart)
 
 
-
-/*******************************************************************************
-#4. Identify individuals with Dx only eczema who have eligible follow-up dates
-*******************************************************************************/
-foreach cohort in multimorb { // ALI: same conditions for both for now. this may change
-	display ""
-	display "******************************************************************"
-	display " `cohort' cohort "
-	display "******************************************************************"	
-	display ""
-	preserve
-		//if "`cohort'"=="multimorb" gen entry=max(eligibleStart, eczemadateDx)
-		//if "`cohort'"=="Mhealth" gen entry=max(eligibleStart, (eczemadateDx+365.25)) // add a year to eczema diagnosis date for cancer cohort - 12-month cancer-free interval
-		gen entry=max(eligibleStart, eczemadateDx)
-		lab var entry "latest of: eczemaDx (first code), 18th, study start, start reg)"
-		format entry %td	
-		drop if entry>=eligibleEnd //(1,532,599 observations deleted)
-		
-		gen incid=1 if eczemadateDx>eligibleStart
-		recode incid .=0
-		tab incid, miss
-		label var incid "new onset eczema after eligible for cohort entry"
-		
-		unique patid
-		
-		label data "Eczema exposed cohort - defined by Dx only `cohort' study"
-		notes: Eczema exposed cohort - defined by Dx only
-		notes: Eczema exposed for `cohort' study
-		notes: eligible for FU (based on age, eligible FU, study dates)
-		notes: ${filename} / TS
-
-		sort patid 
-		compress
-		save "${pathOut}/eczemaExposed-eligible-Dxonly-`cohort'", replace
-	restore
-
-} /*end foreach cohort in cancer mortality*/
-
-
-
-
+gen exclude1 = happy18th > `startdate' 
+gen exclude2 = crd + 365.25 >  `startdate'
+gen exclude3 = eligibleEnd < eligibleStart
+gen exclude4 = eczemadate > eligibleEnd
+gen exclude = max(exclude1,exclude2,exclude3,exclude4)
+tab exclude
 
 /*******************************************************************************
 #5. Identify individuals with an eczema diagnosis (based on full algorithm)
@@ -255,7 +220,9 @@ foreach cohort in multimorb { // ALI: same conditions for both for now. this may
 *******************************************************************************/
 * drop those with eczema based on diagnosis only (i.e. no requirement for
 * 2 x therapy on separate days)
-drop if eczemadate==.
+
+	drop if eczemadate==. // 590,150
+
 
 foreach cohort in multimorb {
 	display ""
@@ -268,19 +235,21 @@ foreach cohort in multimorb {
 		gen entry=max(eligibleStart, eczemadate)
 		//if "`cohort'"=="mortality" 
 		lab var entry "latest of: eczemaDx (latest code/2nd Rx), 18th, study start, start reg)"
-/*
-		if "`cohort'"=="cancer" gen entry=max(eligibleStart, eczemadate+365.25) // add 12 months for cancer cohort
-		if "`cohort'"=="cancer" lab var entry "latest of: eczemaDx (latest code/2nd Rx)+365.25, 18th, study start, start reg)"
-*/
+
 		format entry %td
 
+	
+		* check that there aren't any people with end of eligibility after start of
+		* eligibility
+		count if eligibleStart>eligibleEnd 
+		* drop these observations
+		drop if eligibleStart>eligibleEnd
+
 		***DROP patients without any follow-up during study period
+		count if entry>=eligibleEnd 
 		drop if entry>=eligibleEnd 
 		unique patid 
 
-		* check that there aren't any people with end of eligibility after start of
-		* eligibility
-		count if eligibleStart>eligibleEnd // 
 
 		/*******************************************************************************
 		#6. Flag incident/prevalent cases
@@ -313,7 +282,10 @@ foreach cohort in multimorb {
 			drop temp
 		}
 		format matchDate %td
-		label var matchDate  "latest date in 5 year window to match to control"
+		label var matchDate  "latest date in 3 year window to match to control"
+		tab matchDate, m
+		drop if matchDate == .
+
 		/*******************************************************************************
 		#7. label and save
 		*******************************************************************************/
