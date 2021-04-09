@@ -85,7 +85,7 @@ unique patid // n= 2146815
 
 
 * label variables
-label var indexdate "earliest morbidity code diagnostic of eczema"
+label var indexdate "earliest morbidity code diagnostic of astma"
 
 order patid index 
 
@@ -98,7 +98,7 @@ order patid index
 * latest of Read code or second eczema therapy code
 gen asthmadate = indexdate
 format asthmadate %td
-label var asthmadate "latest of date of eczema Dx or second eczema Rx"
+label var asthmadate "latest of date of astma Dx"
 assert asthmadate!=. // OK
 
 

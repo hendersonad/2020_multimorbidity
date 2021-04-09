@@ -102,9 +102,6 @@ gen src=1
 compress
 save "${pathOut}/eczemaRx-dates", replace
 	
-
-
-	
 	
 /*------------------------------------------------------------------------------
 #1.2 From Clinical/Referral file data
@@ -263,7 +260,7 @@ sort patid eventdate
 	- only keep the first 2 therapy records per patient
 *******************************************************************************/
 * only keep one record if there is more than one therapy record on the same day
-duplicates drop patid eventdate, force // (1,454,258 observations deleted)
+duplicates drop patid eventdate, force 
 unique patid // n=118,269
 
 * drop patients with therapy records on only one day
@@ -320,7 +317,7 @@ sort patid
 compress
 save "${pathOut}/eczemaExposed", replace
 
-
+use ${pathOut}/eczemaExposed, clear
 
 unique patid // 1788057
 
