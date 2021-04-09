@@ -88,7 +88,7 @@ rungprddlg, define(1) extract(0) build(July 2017) ///
 */
 
 
-rungprddlg, define(1) extract(0) build(July 2020) ///
+rungprddlg_skinepi, define(1) extract(0) build(July 2020) ///
 	directory(Z:\GPRD_GOLD\Ali\2020_multimorbidity\in) ///
 	studyname(mm_extract_asthma) memorytoassign(8g) ///
 	ssta(01jan1900) send(01jan2100) gend(Male & Female) ///
@@ -239,6 +239,13 @@ cap log close // CPRD data extract will create it's own log file
 
 rungprddlg, define(0) extract(1) build(July 2020) directory(${pathIn}) ///
 	studyname(mm_extract_asthma) memorytoassign(4g)
+
+
+
+rungprddlg_skinepi, define(0) extract(1) build(July 2020) directory(${pathIn}) ///
+	studyname(mm_extract_asthma) memorytoassign(4g)
+rungprddlg_skinepi, define(0) extract(1) build(July 2020) directory(${pathIn}) ///
+	studyname(mm_extract_eczema) memorytoassign(4g)
 
 
 
