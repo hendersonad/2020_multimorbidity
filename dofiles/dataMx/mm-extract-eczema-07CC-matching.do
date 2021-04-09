@@ -62,7 +62,8 @@ adopath + "J:\EHR share\ado"
 
 mm_extract paths
 
-run "programs\prog_matching.do"
+run "dofiles\Kate_matching\prog_matching.do"
+run "dofiles\Kate_matching\prog_matchingV2.do"
 
 /*
 syntax, dataset_path(string) dataset(string) ///
@@ -95,19 +96,20 @@ rename yob yeardob
 rename gender sex
 rename exposed case
 gen pracid = mod(patid, 1000)
-t
+count
 save "${pathOut}\expANDunexppool-main-multimorb-eczema-CCmatch.dta", replace
-/*
+
 tab case
+/*
 
       0=potential |
          control; |
         1=exposed |      Freq.     Percent        Cum.
 ------------------+-----------------------------------
-potential control |  3,739,688       88.57       88.57
-          exposed |    482,460       11.43      100.00
+potential control |  3,648,930       89.36       89.36
+          exposed |    434,444       10.64      100.00
 ------------------+-----------------------------------
-            Total |  4,222,148      100.00
+            Total |  4,083,374      100.00
 */
 
 prog_matching, dataset_path($pathOut\) /// 
@@ -118,12 +120,14 @@ prog_matching, dataset_path($pathOut\) ///
 	nocontrols(5) nopractices(937) // 937 practices JUL2020 build 
 
 /*
-Time started matching = 11:18:12
-Time ended matching = 12:25:51
-Number of cases with zero potential matches = 112
+
+Time started matching = 12:33:22
+Time ended matching = 14:36:54
+Number of cases with zero potential matches = 0
+
 */
 
-use "expANDunexppool-main-multimorb-eczema-CCmatch_selected_matches", clear
+use "${pathOut}/expANDunexppool-main-multimorb-eczema-CCmatch_selected_matches", clear
 
 keep caseid 
 duplicates drop caseid , force
@@ -131,7 +135,7 @@ rename caseid contid
 tempfile cases
 save `cases', replace
 
-use "expANDunexppool-main-multimorb-eczema-CCmatch_selected_matches", clear
+use "${pathOut}/expANDunexppool-main-multimorb-eczema-CCmatch_selected_matches", clear
 keep contid
 
 append using `cases'  

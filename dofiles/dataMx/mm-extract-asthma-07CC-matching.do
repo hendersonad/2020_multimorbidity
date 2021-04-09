@@ -63,6 +63,7 @@ adopath + "J:\EHR share\ado"
 mm_extract paths
 
 run "dofiles\Kate_matching\prog_matching.do"
+run "dofiles\Kate_matching\prog_matchingV2.do"
 
 /*
 syntax, dataset_path(string) dataset(string) ///
@@ -97,17 +98,18 @@ rename exposed case
 gen pracid = mod(patid, 1000)
 
 save "${pathOut}\expANDunexppool-main-multimorb-asthma-CCmatch.dta", replace
+
+tab case
 /*
-
-
       0=potential |
          control; |
         1=exposed |      Freq.     Percent        Cum.
 ------------------+-----------------------------------
-potential control |  3,739,688       88.57       88.57
-          exposed |    482,460       11.43      100.00
+potential control |  3,847,839       88.70       88.70
+          exposed |    490,329       11.30      100.00
 ------------------+-----------------------------------
-            Total |  4,222,148      100.00
+            Total |  4,338,168      100.00
+
 */
 
 prog_matching, dataset_path($pathOut\) /// 
@@ -115,17 +117,26 @@ prog_matching, dataset_path($pathOut\) ///
 	match_sex(1) match_age(1) match_diffage(5) /// 
 	match_regperiod(1) ///
 	control_minpriorreg(0) control_minfup(0) ///
-	nocontrols(5) nopractices(685) 
+	nocontrols(5) nopractices(937) 
 
 /*
-Time started matching = 11:18:12
-Time ended matching = 12:25:51
-Number of cases with zero potential matches = 112
+Time started matching = 
+Time ended matching = 18:30:15
+Number of cases with zero potential matches = 34230
 */
 	
-	
+use "${pathOut}/expANDunexppool-main-multimorb-asthma-CCmatch_selected_matches", clear
+bysort caseid:gen n1=_n
+bysort caseid:gen N1=_N
+tab N1
 
-use "expANDunexppool-main-multimorb-asthma-CCmatch_selected_matches", clear
+preserve
+collapse (max)N1, by(caseid)
+nopeople caseid
+noi tab N1
+restore
+
+use "${pathOut}/expANDunexppool-main-multimorb-asthma-CCmatch_selected_matches", clear
 
 keep caseid 
 duplicates drop caseid , force
@@ -133,13 +144,13 @@ rename caseid contid
 tempfile cases
 save `cases', replace
 
-use "expANDunexppool-main-multimorb-asthma-CCmatch_selected_matches", clear
+use "${pathOut}/expANDunexppool-main-multimorb-asthma-CCmatch_selected_matches", clear
 keep contid
 
 append using `cases'  
 
 duplicates drop contid, force
-desc
+count
 rename contid patid
 save ${MMpathIn}\results_mm_asthma_extract_matched, replace
 
