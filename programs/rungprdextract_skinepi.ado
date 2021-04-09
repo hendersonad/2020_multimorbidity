@@ -53,7 +53,7 @@ set more off
 
 local timestart=c(current_time)
 
-
+/*
 /********************************************************************************************
 *1. Extract full patient data for patients in the defined patient list, practice by practice
 *    ... and while doing so, process each file to label and convert dates etc...
@@ -141,8 +141,7 @@ forvalues i=1/`practot'  {
 			}	
 }
 
-local time_finishErasing = c(current_time)
-
+local time_finishErasing = c(current_time)*/
 *******************************************************************************
 *3. Produce a practice file for included practices only 
 *******************************************************************************
