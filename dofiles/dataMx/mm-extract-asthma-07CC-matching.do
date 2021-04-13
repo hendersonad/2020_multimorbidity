@@ -167,7 +167,7 @@ explicitely now
 cap log close
 
 rungprddlg, define(0) extract(1) build(July 2020) directory(${MMpathIn}) ///
-	studyname(mm_asthma_extract_matched) memorytoassign(5g)
+	studyname(mm_asthma_extract_matched) memorytoassign(8g)
 
 
 	

@@ -125,7 +125,21 @@ Time started matching = 12:33:22
 Time ended matching = 14:36:54
 Number of cases with zero potential matches = 0
 
+Time started selecting controls:  15:17:08
+Time finshed selecting controls:  13:50:28 THE NEXT DAY
+
 */
+	
+use "${pathOut}/expANDunexppool-main-multimorb-eczema-CCmatch_selected_matches", clear
+bysort caseid:gen n1=_n
+bysort caseid:gen N1=_N
+tab N1
+
+preserve
+collapse (max)N1, by(caseid)
+nopeople caseid
+noi tab N1
+restore
 
 use "${pathOut}/expANDunexppool-main-multimorb-eczema-CCmatch_selected_matches", clear
 
@@ -158,10 +172,14 @@ explicitely now
 cap log close
 
 rungprddlg, define(0) extract(1) build(July 2020) directory(${MMpathIn}) ///
-	studyname(mm_eczema_extract_matched) memorytoassign(5g)
+	studyname(mm_eczema_extract_matched) memorytoassign(8g)
 
 
-	
+rungprddlg_therapy, define(0) extract(1) build(July 2020) directory(${MMpathIn}) ///
+	studyname(mm_eczema_extract_matched) memorytoassign(8g)
+
+
+
 	
 	
 

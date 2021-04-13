@@ -36,7 +36,7 @@ log using "${pathLogs}/${filename}", text replace
 /*******************************************************************************
 >> choose study type
 *******************************************************************************/
-local study = "eczema"
+local study = "asthma"
 
 cd ${pathIn}
 
@@ -95,8 +95,8 @@ forvalues i = 1/`obs' {
 	di `i'
 	cap append using "`study'Cohort_readchapters\save`i'"
 }
-save `study'_test.dta, replace
-export delimited `study'_test_excel.csv, replace
+save `study'_READ.dta, replace
+export delimited `study'_READ_excel.csv, replace
 
 cd `study'Cohort_readchapters
 local list : dir . files "save*"
