@@ -58,7 +58,7 @@ program define prog_matching
 syntax, dataset_path(string) dataset(string) ///
 	match_sex(integer) match_age(integer) match_diffage(integer) match_regperiod(integer) ///
 	control_minpriorreg(integer) control_minfup(integer) ///
-	nocontrols(integer) nopractices(integer) 
+	nocontrols(integer) nopractices(integer) study(string)
 	
 * dataset_path			// paths of case/control pool file and path to save output
 * dataset				// name of dataset containing all potential controls and eligible cases
@@ -125,7 +125,7 @@ local N1=r(N)
 
 * SET UP POSTFILE 
 capture postclose temp2
-postfile temp2  long id1 long id0 year1 year0 sex1 sex0 pracid1 pracid0 indexdate start stop using test`a'  , replace
+postfile temp2  long id1 long id0 year1 year0 sex1 sex0 pracid1 pracid0 indexdate start stop using test`a'_`study'  , replace
 
 * FIRST LOOP GOES THROUGH EACH CASE IN TURN
 
@@ -197,14 +197,14 @@ local minI = "`1'"
 di `minI'
 local minIplus1 = `minI' + 1
 di `minIplus1'
-use test`minI' , clear
+use test`minI'_`study' , clear
 forvalues i=`minIplus1'/`nopractices'  {
-		cap append using test`i'
+		cap append using test`i'_`study'
 			}		
 save "`dataset'_allpotentialmatches", replace
 
 forvalues i=1/`nopractices'  {
-		cap erase test`i'.dta
+		cap erase test`i'_`study'.dta
 			}		
 
 ********************************************************
