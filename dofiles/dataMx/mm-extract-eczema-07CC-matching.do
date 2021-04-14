@@ -106,10 +106,11 @@ tab case
          control; |
         1=exposed |      Freq.     Percent        Cum.
 ------------------+-----------------------------------
-potential control |  3,648,930       89.36       89.36
-          exposed |    434,444       10.64      100.00
+potential control |  3,252,557       88.22       88.22
+          exposed |    434,444       11.78      100.00
 ------------------+-----------------------------------
-            Total |  4,083,374      100.00
+            Total |  3,687,001      100.00
+
 */
 
 prog_matching, dataset_path($pathOut\) /// 
@@ -117,7 +118,8 @@ prog_matching, dataset_path($pathOut\) ///
 	match_sex(1) match_age(1) match_diffage(5) /// 
 	match_regperiod(1) ///
 	control_minpriorreg(0) control_minfup(0) ///
-	nocontrols(5) nopractices(937) // 937 practices JUL2020 build 
+	nocontrols(5) nopractices(937) /// 937 practices JUL2020 build 
+	study("eczema")
 
 /*
 

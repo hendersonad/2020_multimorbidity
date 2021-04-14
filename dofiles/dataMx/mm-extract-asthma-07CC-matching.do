@@ -63,7 +63,6 @@ adopath + "J:\EHR share\ado"
 mm_extract paths
 
 run "dofiles\Kate_matching\prog_matching.do"
-run "dofiles\Kate_matching\prog_matchingV2.do"
 
 /*
 syntax, dataset_path(string) dataset(string) ///
@@ -82,7 +81,7 @@ syntax, dataset_path(string) dataset(string) ///
 * control_minfup 0 		// Days controls must be registered after index date of case
 * nocontrols			// number of controls to match to every case
 * nopractices 	 		// Maximum practice ID number
-
+* study					// Name of study will be appended onto "Test*.dta" 
 
 
 
@@ -117,7 +116,8 @@ prog_matching, dataset_path($pathOut\) ///
 	match_sex(1) match_age(1) match_diffage(5) /// 
 	match_regperiod(1) ///
 	control_minpriorreg(0) control_minfup(0) ///
-	nocontrols(5) nopractices(937) 
+	nocontrols(5) nopractices(937) ///
+	study("asthma")
 
 /*
 Time started matching = 
@@ -167,7 +167,7 @@ explicitely now
 cap log close
 
 rungprddlg, define(0) extract(1) build(July 2020) directory(${MMpathIn}) ///
-	studyname(mm_asthma_extract_matched) memorytoassign(8g)
+	studyname(mm_asthma_extract_matched) memorytoassign(2g)
 
 
 	

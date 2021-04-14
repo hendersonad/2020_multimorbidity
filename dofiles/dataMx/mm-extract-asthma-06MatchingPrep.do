@@ -139,62 +139,29 @@ foreach cohort in multimorb {
 		display "*** analysis: `analysis' ***"
 		display "*************************************************************"
 
-/*------------------------------------------------------------------------------
+		/*------------------------------------------------------------------------------
 		A1. Unexposed
 		------------------------------------------------------------------------------*/
 		****** #A1.1 	Identify INCIDENT cases with valid unexposed follow-up 
 		* so that they can be included in the control pool up until their
 		* `condition' diagnosis
 		
-		local cohort = "multimorb"
-		local analysis = "main"
-		
-		if "`analysis'"=="main" use ${pathOut}/`condition'Exposed-eligible-`cohort', clear
-		if "`analysis'"=="sens1" use ${pathOut}/`condition'Exposed-eligible-`cohort', clear
-		if "`analysis'"=="sens2" use ${pathOut}/`condition'Exposed-eligible-Dxonly-`cohort', clear
-	 
-		* change date of end of follow up to day before date of `condition' diagnosis
-		* Dx date will be different depending on diff analyses (main/sens1/sens2)
-		/*
-		keep if incid==1 // incid==1 if `condition' Dx > eligigle start of FU (var created in extract04 #4 and #5)		
+		// NO longer valid since case-control design. A diagnosis at any time excludes from control
 	
-		if "`analysis'"=="main" replace eligibleEnd=min(`condition'dateDx-1, eligibleEnd) 	// censor at first `condition' code
-		if "`analysis'"=="sens1" replace eligibleEnd=min(`condition'date-1, eligibleEnd)		// censor when individuals meet main `condition' def
-		if "`analysis'"=="sens2" replace eligibleEnd=min(`condition'dateDx-1, eligibleEnd)	// censor at first `condition' code
-		*/
-		* now drop any who are no longer eligible for FU due to eligibleEnd date now reset to after eligibleStart
-		drop if eligibleStart>eligibleEnd
-		
-		* temporarily save the incident `condition' cases to be appended on to the 
-		* rest of the control pool in a mo' (i.e. at #A1.3)
-		keep patid gender dob eligible* matchDate
-		tempfile unexposedtime_preDx
-		di "Number of cases that contribute time to be potentially selected as control ------------------------------------"
-		count 
-		save `unexposedtime_preDx', replace
-
-		
 		
 		****** #A1.2	identify potential controls
 		* open file containing ALL potential controls (will include some exposed individuals)
-		use ${pathOut}/controlpool, clear
-		if "`analysis'"=="main" keep if cp_main_sens2==1 // only keep those eligible for entry in main/sens2 control pool
-		if "`analysis'"=="sens1" keep if cp_sens1==1	// only keep those eligible for entry in sens1 control pool
-		if "`analysis'"=="sens2" keep if cp_main_sens2==1	// only keep those eligible for entry in main/sens2 control pool
+		use ${pathOut}/controlpool_asthma, clear
+		if "`analysis'"=="main" keep if cp_main==1 // only keep those eligible for entry in main/sens2 control pool
 		drop yob crd tod deathdate pracid region lcd uts 
 		
 		* identify and drop any individuals who are in the exposed cohort from the control pool
 		* by merge with `condition' cohort and only keeping unmatched records from master dataset (i.e. drop records in exposed dataset only or both exposed and control pool datasets)
-		if "`analysis'"=="main" merge 1:1 patid using ${pathOut}/`condition'Exposed-eligible-`cohort', keep(master) nogen keepusing(patid) // drop any in main/sens1 exp
-		if "`analysis'"=="sens1" merge 1:1 patid using ${pathOut}/`condition'Exposed-eligible-`cohort', keep(master) nogen keepusing(patid) // drop any in main/sens1 exp
-		if "`analysis'"=="sens2" merge 1:1 patid using ${pathOut}/`condition'Exposed-eligible-Dxonly-`cohort', keep(master) nogen keepusing(patid) // drop any in sens2 exp (i.e. diagnosis only)
-
-	
-	
+		if "`analysis'"=="main" merge 1:1 patid using ${pathOut}/`condition'Exposed-eligible-`cohort', keep(master) nogen keepusing(patid) // drop any in main/sens1 exp	
 	
 		******* #A1.3 	add back in any valid pre-diagnosis time for incident `condition' cases
 		* add in any unexposed time for the individuals in the exposed cohort 
-		append using `unexposedtime_preDx'	
+		// NO longer valid since case-control design. A diagnosis at any time excludes from control
 		
 		****** #A1.4 	create useful variables and flag as unexposed
 		* create variables for enddate and indexdate		
@@ -217,13 +184,12 @@ foreach cohort in multimorb {
 		label var exposed "0=potential control; 1=exposed"
 		label define exp 0"potential control" 1"exposed"
 		label values exposed exp
+		
 		/*------------------------------------------------------------------------------
 		A2. Exposed
 		------------------------------------------------------------------------------*/
 		* append `condition' exposed cases and flag them as exposed
 		if "`analysis'"=="main" append using ${pathOut}/`condition'Exposed-eligible-`cohort', keep(patid gender dob eligibleStart eligibleEnd entry matchDate)
-		if "`analysis'"=="sens1" append using ${pathOut}/`condition'Exposed-eligible-`cohort', keep(patid gender dob eligibleStart eligibleEnd entry matchDate)
-		if "`analysis'"=="sens2" append using ${pathOut}/`condition'Exposed-eligible-Dxonly-`cohort', keep(patid gender dob eligibleStart eligibleEnd entry matchDate)
 
 		* flag exposed cases
 		recode exposed .=1
@@ -233,10 +199,7 @@ foreach cohort in multimorb {
 		replace startdate=entry if exposed==1
 		replace enddate=eligibleEnd if exposed==1
 		assert startdate<=enddate 
-		
-		
-		
-		
+	
 		/*------------------------------------------------------------------------------
 		A3. Rename variables to those expected by the matching program
 		------------------------------------------------------------------------------*/
@@ -283,257 +246,4 @@ foreach cohort in multimorb {
 } /*end foreach cohort in cancer mortality*/
 
 
-
-
-
-
 /* STOP HERE AND MOVE TO CC-MATCHING ALGORITHM (TIM COLLIER CODE '07CC-MATCHING')
-
-/*******************************************************************************
-********************************************************************************
-#B. MATCHING
-********************************************************************************
-*******************************************************************************/
-
-/*------------------------------------------------------------------------------
-B1. IDENTIFY AGE WINDOW FOR MATCHING
-		Loop through getting matches allowing different age window to get 
-		an idea of reasonable window for age matching
-------------------------------------------------------------------------------*/
-
-use ${pathOut}/expANDunexppool-main-multimorb, clear 
-
-forvalues years=5(5)15 {
-	display ""
-	display "**********************************************************"
-	display "allowing `years'years between exposed and unexposed match"
-	display "**********************************************************"
-	display ""
-	use $pathOut/expANDunexppool-main-multimorb, clear
-	sample 1, by(exposed)
-	tab exposed, miss
-	set seed 3367
-	getmatchedcohort, practice gender yob yobwindow(`years') followup ctrlsperexp(5) savedir($pathOut) dontcheck cprddb("gold")
-} /* end forvalues years=5(5)15 */
-
-
-/*------------------------------------------------------------------------------
-B2. Match
-------------------------------------------------------------------------------*/
-foreach cohort in multimorb {
-	display ""
-	display "*************************************************************"
-	display "*** `cohort' cohort ***"
-	display "*************************************************************"
-	foreach analysis in main {
-		display ""
-		display "*************************************************************"
-		display "*** analysis: `analysis' ***"
-		display "*************************************************************"
-
-		use ${pathOut}/expANDunexppool-`analysis'-`cohort', clear
-		tab exposed, miss
-		
-		set seed 3367
-		getmatchedcohort, practice gender yob yobwindow(5) followup ctrlsperexp(5) savedir($pathOut) dontcheck cprddb("gold")
-		
-		* save results to file with appropriate suffix
-		* first open dataset created by matching algorithm
-		use ${pathOut}/getmatchedcohort.dta, clear
-		
-		* identify number of matches per exposed patient
-		bysort set: gen bign=_N
-		tab bign
-		
-		* label and save
-		label data "`cohort' cohort - `analysis' analysis" 
-		notes: `cohort' cohort - `analysis' analysis
-		notes: NB: there will be duplicate patids in this file if px exp+unexp
-		notes: ${filename} / TS
-		compress
-		
-		save ${pathOut}/getmatchedcohort-`analysis'-`cohort', replace /*all exposed and unexp: includes duplicates*/
-		
-		erase ${pathOut}/getmatchedcohort.dta // clean up file created by getmatchedcohort program
-	} /*end foreach analysis in main sens1 sens2*/
-} /*end foreach cohort in cancer mortality*/
-
-
-
-/*------------------------------------------------------------------------------
-B3. Review age and sex distribution of `condition' exposed with no match vs those with
-	a match 
-	for MAIN ANALYSIS for both cancer and mortality cohorts
-------------------------------------------------------------------------------*/
-foreach cohort in multimorb {
-	display ""
-	display "*************************************************************"
-	display "*** `cohort' cohort ***"
-	display "*************************************************************"
-	
-	* open exposed and unexposed pool file and only keep exposed
-	use ${pathOut}/expANDunexppool-main-`cohort', clear
-	keep if exposed==1
-	
-	* identify those with matches
-	merge 1:1 patid exposed using ${pathOut}/getmatchedcohort-main-`cohort'
-	keep if exposed==1
-	
-	* look at those with matches versus those without matches
-	display ""
-	display "*************************************************************"
-	display "unmatched"
-	display "*************************************************************"
-	count if _merge==1
-	tab yob if _merge==1
-	tab gender if _merge==1
-	
-	display ""
-	display "*************************************************************"
-	display "matched"
-	display "*************************************************************"
-	count if _merge==3
-	tab yob if _merge==3
-	tab gender if _merge==3
-	
-	tab gender _merge if _merge != 2, col
-
-} /*end foreach cohort in cancer mortality*/
-
-/*******************************************************************************
-********************************************************************************
-#C. Get data for all cohorts
-	1. Identify patids for all patients (exposed and unexposed) from both cohorts 
-	(and for all 3 analyses)
-	2. Export a list of patids to send to CPRD to request HES and ONS data
-	3. Extract CPRD data for all individuals 
-********************************************************************************
-*******************************************************************************/
-/*------------------------------------------------------------------------------
-C1. Get list of patients
-------------------------------------------------------------------------------*/
-use ${pathOut}\getmatchedcohort-main-multimorb, clear
-tab exposed
-/* No Sensitivity Analysis for now
-foreach analysis in sens1 {
-	append using ${pathOut}\getmatchedcohort-`analysis'-multimorb
-} /*end foreach analysis in main sens1 sens2*/
-*/
-* just keep list of individual patients only
-keep patid
-duplicates drop
-
-* save in the appropriate directory for extraction tool to find
-* i.e. in the same directory where I want datasets to be saved following
-* extraction using CPRDFast tool
-label data "patids for all cohorts (multimorb) and all analyses"
-notes: patids for all cohorts (multimorb) and all analyses
-notes: ${filename} / TS
-compress
-save ${MMpathIn}/results_ecz_extract3, replace
-
-count
-/*
-/*------------------------------------------------------------------------------
-C2. Export a list of patids to send to CPRD to request HES and ONS data
-------------------------------------------------------------------------------*/
-/*
-linked data request form states:
-Please complete the form below and email this together with your list of patient 
-ids, including each patient’s linkage eligibility flag/s (e.g. hes_e=1) 
-in text file format (.txt) to the kc@cprd.com. 
-*/
-merge 1:1 patid using "${pathLinkageEligibility}/linkage_eligibility", nogen keep(match) keepusing(hes_e death_e lsoa_e)
-
-notes: patids for all cohorts (multimorb) and all analyses
-notes: patids to send with request for linked data
-notes: ${filename} / TS
-compress
-save "${pathOut}\patids_request_linked_data", replace
-
-* export a tab delimited text file
-export delimited using "${pathOut}\patids_request_linked_data.txt", delimiter(tab) replace
-*/
-
-
-
-
-
-
-
-/*------------------------------------------------------------------------------
-C3. Extract CPRD data for everyone from all cohorts (x2):
-	- multimorb studies
-	- main, sens1 analyses
-------------------------------------------------------------------------------*/
-/*
-log will stop running because of timings log for extract, so stop running 
-explicitely now
-*/
-
-cap log close
-
-rungprddlg, define(0) extract(1) build(July 2020) directory(${MMpathIn}) ///
-	studyname(ecz_extract3) memorytoassign(5g)
-
-
-//  obs:       282,816
-
-
-/*
-
-     name:  <unnamed>
-       log:  J:\EHR-Working\Helena\log\ 2020 10 30_172042_lsh1510922_extractti
-> mings_ecz_extract3.smcl
-  log type:  smcl
- opened on:  30 Oct 2020, 17:20:42
-------------------------------------------------------------------------------
-      name:  <unnamed>
-       log:  Z:\GPRD_GOLD\Ali\2020_`condition'_extract\in/timings.log
-  log type:  text
- opened on:  30 Oct 2020, 17:20:42
-Time of starting =                          14:25:38
-Time of finishing =                         17:20:42
- 
-
-*********************************************************************
-Time finished extracting Additional =       14:33:21
-Time finished extracting Clinical =         14:54:53
-Time finished extracting Consultation =     15:14:07
-Time finished extracting Patient =          15:21:37
-Time finished extracting Referral =         15:24:56
-Time finished extracting Test =             15:48:24
-Time finished extracting Therapy =          16:48:10
-Time finished extracting Immunisation =     15:18:48
- 
-
-*********************************************************************
-Time finished appending Additional =        16:48:53
-Time finished appending Clinical =          16:51:26
-Time finished appending Consultation =      16:54:22
-Time finished appending Patient =           16:54:34
-Time finished appending Referral =          16:54:42
-Time finished appending Test =              16:57:28
-Time finished appending Therapy =           17:03:03
-Time finished appending Immunisation =      16:54:31
-
-Time finished erasing files =               17:20:41
-
-Time finished creating practice file =      17:20:42
-      name:  <unnamed>
-       log:  Z:\GPRD_GOLD\Ali\2020_`condition'_extract\in/timings.log
-  log type:  text
- closed on:  30 Oct 2020, 17:20:42
-------------------------------------------------------------------------------
-      name:  <unnamed>
-       log:  J:\EHR-Working\Helena\log\ 2020 10 30_172042_lsh1510922_extractti
-> mings_ecz_extract3.smcl
-  log type:  smcl
- closed on:  30 Oct 2020, 17:20:42
-------------------------------------------------------------------------------
-
-
-*/
-
-
-*/
