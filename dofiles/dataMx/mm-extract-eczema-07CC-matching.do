@@ -113,7 +113,16 @@ potential control |  3,252,557       88.22       88.22
 
 */
 
+/*
 prog_matching, dataset_path($pathOut\) /// 
+	dataset("expANDunexppool-main-multimorb-eczema-CCmatch") ///
+	match_sex(1) match_age(1) match_diffage(5) /// 
+	match_regperiod(1) ///
+	control_minpriorreg(0) control_minfup(0) ///
+	nocontrols(5) nopractices(937) /// 937 practices JUL2020 build 
+	study("eczema")
+*/
+prog_matching_eczema, dataset_path($pathOut\) /// 
 	dataset("expANDunexppool-main-multimorb-eczema-CCmatch") ///
 	match_sex(1) match_age(1) match_diffage(5) /// 
 	match_regperiod(1) ///
@@ -123,12 +132,11 @@ prog_matching, dataset_path($pathOut\) ///
 
 /*
 
-Time started matching = 12:33:22
-Time ended matching = 14:36:54
-Number of cases with zero potential matches = 0
+Time started matching = 14:10:57
+Time ended matching = 16:20:42
 
-Time started selecting controls:  15:17:08
-Time finshed selecting controls:  13:50:28 THE NEXT DAY
+Number of cases with zero potential matches = 22
+
 
 */
 	
@@ -173,13 +181,8 @@ explicitely now
 
 cap log close
 
-rungprddlg, define(0) extract(1) build(July 2020) directory(${MMpathIn}) ///
-	studyname(mm_eczema_extract_matched) memorytoassign(8g)
-
-
-rungprddlg_therapy, define(0) extract(1) build(July 2020) directory(${MMpathIn}) ///
-	studyname(mm_eczema_extract_matched) memorytoassign(8g)
-
+rungprddlg_skinepi, define(0) extract(1) build(July 2020) directory(${MMpathIn}) ///
+	studyname(mm_eczema_extract_matched) memorytoassign(2g)
 
 
 	

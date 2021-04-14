@@ -111,6 +111,7 @@ potential control |  3,847,839       88.70       88.70
 
 */
 
+/*
 prog_matching, dataset_path($pathOut\) /// 
 	dataset("expANDunexppool-main-multimorb-asthma-CCmatch") ///
 	match_sex(1) match_age(1) match_diffage(5) /// 
@@ -118,11 +119,20 @@ prog_matching, dataset_path($pathOut\) ///
 	control_minpriorreg(0) control_minfup(0) ///
 	nocontrols(5) nopractices(937) ///
 	study("asthma")
+*/
 
+prog_matching_asthma, dataset_path($pathOut\) /// 
+	dataset("expANDunexppool-main-multimorb-asthma-CCmatch") ///
+	match_sex(1) match_age(1) match_diffage(5) /// 
+	match_regperiod(1) ///
+	control_minpriorreg(0) control_minfup(0) ///
+	nocontrols(5) nopractices(937) ///
+	study("asthma")
 /*
-Time started matching = 
-Time ended matching = 18:30:15
-Number of cases with zero potential matches = 34230
+Time started matching = ??
+Time ended matching = 17:15:53
+
+Number of cases with zero potential matches = 175
 */
 	
 use "${pathOut}/expANDunexppool-main-multimorb-asthma-CCmatch_selected_matches", clear
@@ -166,7 +176,7 @@ explicitely now
 
 cap log close
 
-rungprddlg, define(0) extract(1) build(July 2020) directory(${MMpathIn}) ///
+rungprddlg_skinepi, define(0) extract(1) build(July 2020) directory(${MMpathIn}) ///
 	studyname(mm_asthma_extract_matched) memorytoassign(2g)
 
 
