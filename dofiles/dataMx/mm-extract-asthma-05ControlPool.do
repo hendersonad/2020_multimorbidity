@@ -118,37 +118,7 @@ format dob % td
 label var dob DOB
 
 * add in asthma diagnosis dates so that any censoring dates are available
-* only need mortality cohort as this includes everyone included in the cancer 
-* cohort + some extra who are not eligible for the cancer cohort because 
-* of requirement for an additional 365.25 days after asthma diagnosis
-* before start of FU to limit reverse causality 
 merge 1:1 patid using "${pathOut}/asthmaExposed-eligible-multimorb", keepusing(asthmadate) nogen
-
-
-
-
-
-
-
-
-/*******************************************************************************
-#2. Drop anyone not eligible for HES linkage
-*******************************************************************************/
-
-/* IGNORING LINKAGE FOR NOW - AH 
-* merge in linkage eligibility
-merge 1:1 patid using "${pathLinkageEligibility}/linkage_eligibility", keep(match) nogen keepusing(pracid hes_e death_e linkdate)
-unique patid // n=10,391,001
-prog_formatdate, datevar(linkdate)
-
-* (used to keep but now) count eligible patients only
-count if hes_e==1 & death_e==1 // 8297209
-unique patid // n = 10921233
-*/
-
-
-
-
 
 
 /*******************************************************************************
@@ -176,10 +146,6 @@ assert happy18th!=.		// no missing values
 gen eligibleStart = max(crd + 365.25, uts, happy18th, d(02jan2016)) 
 format eligibleStart %td 
 label var eligibleStart "latest of: crd+365.25, uts, happy18th, d(02jan2016)"
-
-
-
-
 
 
 /*******************************************************************************
@@ -220,100 +186,50 @@ unique patid //  3847949
 #6. Flag control pool for MAIN analysis (and sensitivity analysis 2)
 *******************************************************************************/
 /*
-Main analysis and sens. 2 include individuals in the control pool until first 
-asthma Dx code.
+Main analysis individuals in the control pool without asthmaDx code
 
-We need to exclude those with an asthma code and no therapy codes from the 
-pool used to identify the unexposed cohort – this is a question of the 
-sensitivity of the algorithm, we want to be sure that those included in the 
-exposed cohort truly have asthma and those in the pool of potential unexposed 
-definitely do not have asthma.
+We need to exclude those with an asthma code at any point (pseudo case-control
+design so we can't have cases being self-controls. No ditinction petween 
+pre- and post-exposed for co-/multi-morbidities so need to exclude
 */
 
-gen cp_main_sens2=1 if asthmadate>eligibleStart
-label var cp_main_sens2 "eligible for main and sens2 control pool"
+gen cp_main=1 if asthmadate==.
+label var cp_main "eligible for main and sens2 control pool"
 
-tab cp_main_sens2, miss
+tab cp_main, miss
 
 /*
-   eligible |
+
+
+  eligible |
    for main |
   and sens2 |
     control |
        pool |      Freq.     Percent        Cum.
 ------------+-----------------------------------
-          1 |  4,653,718       85.75       85.75
-          . |    773,425       14.25      100.00
+          1 |  3,357,620       87.26       87.26
+          . |    490,329       12.74      100.00
 ------------+-----------------------------------
-      Total |  5,427,143      100.00
-*/
+      Total |  3,847,949      100.00
 
-
-
-
-
-/*******************************************************************************
-#7. Flag control pool for SENSITIVITY analysis 1 control cohort pool
-*******************************************************************************/
-/*
-Censor at the date individuals enter the exposed cohort
-i.e. at the point they fulfill the main analysis asthma
-defintion (latest of dx or 2nd asthma therapy record) (sens analysis 1)
-
-Individuals with asthma dx but no Rx are included throughout follow-up
-*/
-gen cp_sens1=1 if asthmadate>eligibleStart 
-label var cp_sens1 "eligible for sens1 control pool"
-tab cp_sens1, miss
-
-/*
-
-   eligible |
-  for sens1 |
-    control |
-       pool |      Freq.     Percent        Cum.
-------------+-----------------------------------
-          1 |  4,840,374       89.19       89.19
-          . |    586,769       10.81      100.00
-------------+-----------------------------------
-      Total |  5,427,143      100.00
 
 */
-
-
-
-
-
-
-
-
-
 
 /*******************************************************************************
 #8. Tidy up and save
 *******************************************************************************/
 * drop anyone who isn't eligible for either control pool
-drop if cp_main_sens2==. & cp_sens1==.
-tab cp_main_sens2 cp_sens1, miss
+drop if cp_main==.
 
 drop mob marital famnum frd regstat reggap internal toreason  accept
 	
-label data "all HES-linked CPRD pop. with eligible FU + no asthma Dx before start FU" 
-notes: all CPRD pop. with eligible FU + no asthma Dx before startFU
-notes: HES eligible, 18yrs+, valid FU during study period
+label data "all CPRD pop. with eligible FU + no asthma Dx" 
+notes: all CPRD pop. with eligible FU + no asthma Dx
 notes: notes: ${filename} / TS
 
 sort patid 
 compress
-save "${pathOut}/controlpool", replace
-	
-
-qui count
-di in blue "ALI control pool has **************************************************"
-di in blue r(N)
-
-
-
+save "${pathOut}/controlpool_asthma", replace
 
 log close
 

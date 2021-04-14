@@ -93,9 +93,6 @@ global filename "mm-extract-eczema-05controlPool"
 * open log file
 log using "${pathLogs}/${filename}", text replace
 
-
-
-
 /*******************************************************************************
 #1. Prep age and sex data for all patients in CPRD 
 	>> so that we are able to identify those who will actually contribute
@@ -118,38 +115,7 @@ format dob % td
 label var dob DOB
 
 * add in eczema diagnosis dates so that any censoring dates are available
-* only need mortality cohort as this includes everyone included in the cancer 
-* cohort + some extra who are not eligible for the cancer cohort because 
-* of requirement for an additional 365.25 days after eczema diagnosis
-* before start of FU to limit reverse causality 
-merge 1:1 patid using "${pathOut}/eczemaExposed-eligible-multimorb", keepusing(eczemadate) nogen
 merge 1:1 patid using "${pathOut}/eczemaExposed-eligible-Dxonly-multimorb", keepusing(eczemadateDx) nogen
-
-
-
-
-
-
-
-
-/*******************************************************************************
-#2. Drop anyone not eligible for HES linkage
-*******************************************************************************/
-
-/* IGNORING LINKAGE FOR NOW - AH 
-* merge in linkage eligibility
-merge 1:1 patid using "${pathLinkageEligibility}/linkage_eligibility", keep(match) nogen keepusing(pracid hes_e death_e linkdate)
-unique patid // n=10,391,001
-prog_formatdate, datevar(linkdate)
-
-* (used to keep but now) count eligible patients only
-count if hes_e==1 & death_e==1 // 8297209
-unique patid // n = 10921233
-*/
-
-
-
-
 
 
 /*******************************************************************************
@@ -178,11 +144,6 @@ gen eligibleStart = max(crd + 365.25, uts, happy18th, d(02jan2016))
 format eligibleStart %td 
 label var eligibleStart "latest of: crd+365.25, uts, happy18th, d(02jan2016)"
 
-
-
-
-
-
 /*******************************************************************************
 #4. Identify end of eligible follow up, latest of:
 		- crd +365
@@ -202,10 +163,6 @@ format eligibleEnd %td
 label var eligibleEnd "earliest of: lcd, tod, deathdate, d(31dec2014)"
 
 
-
-
-
-
 /*******************************************************************************
 #5. Only keep people contributing eligible person time during study period
 *******************************************************************************/
@@ -221,7 +178,7 @@ unique patid // 5427143
 #6. Flag control pool for MAIN analysis (and sensitivity analysis 2)
 *******************************************************************************/
 /*
-Main analysis and sens. 2 include individuals in the control pool until first 
+Main analysis and sens. 2 include individuals in the control pool with mno 
 eczema Dx code.
 
 We need to exclude those with an eczema code and no therapy codes from the 
@@ -231,90 +188,35 @@ exposed cohort truly have eczema and those in the pool of potential unexposed
 definitely do not have eczema.
 */
 
-gen cp_main_sens2=1 if eczemadateDx>eligibleStart
-label var cp_main_sens2 "eligible for main and sens2 control pool"
+gen cp_main=1 if eczemadateDx==.
+label var cp_main "eligible for main control pool"
 
-tab cp_main_sens2, miss
-
-/*
-   eligible |
-   for main |
-  and sens2 |
-    control |
-       pool |      Freq.     Percent        Cum.
-------------+-----------------------------------
-          1 |  4,653,718       85.75       85.75
-          . |    773,425       14.25      100.00
-------------+-----------------------------------
-      Total |  5,427,143      100.00
-*/
-
-
-
-
-
-/*******************************************************************************
-#7. Flag control pool for SENSITIVITY analysis 1 control cohort pool
-*******************************************************************************/
-/*
-Censor at the date individuals enter the exposed cohort
-i.e. at the point they fulfill the main analysis eczema
-defintion (latest of dx or 2nd eczema therapy record) (sens analysis 1)
-
-Individuals with eczema dx but no Rx are included throughout follow-up
-*/
-gen cp_sens1=1 if eczemadate>eligibleStart 
-label var cp_sens1 "eligible for sens1 control pool"
-tab cp_sens1, miss
+tab cp_main, miss
 
 /*
-
-   eligible |
-  for sens1 |
-    control |
-       pool |      Freq.     Percent        Cum.
+    cp_main |      Freq.     Percent        Cum.
 ------------+-----------------------------------
-          1 |  4,840,374       89.19       89.19
-          . |    586,769       10.81      100.00
+          1 |  3,252,667       84.53       84.53
+          . |    595,282       15.47      100.00
 ------------+-----------------------------------
-      Total |  5,427,143      100.00
+      Total |  3,847,949      100.00
 
 */
-
-
-
-
-
-
-
-
-
-
 /*******************************************************************************
 #8. Tidy up and save
 *******************************************************************************/
 * drop anyone who isn't eligible for either control pool
-drop if cp_main_sens2==. & cp_sens1==.
-tab cp_main_sens2 cp_sens1, miss
+drop if cp_main==. 
 
 drop mob marital famnum frd regstat reggap internal toreason  accept
 	
-label data "all HES-linked CPRD pop. with eligible FU + no eczema Dx before start FU" 
-notes: all CPRD pop. with eligible FU + no eczema Dx before startFU
-notes: HES eligible, 18yrs+, valid FU during study period
+label data "a CPRD pop. with eligible FU + no eczema Dx " 
+notes: a CPRD pop. with eligible FU + no eczema Dx 
 notes: notes: ${filename} / TS
 
 sort patid 
 compress
-save "${pathOut}/controlpool", replace
-	
-
-qui count
-di in blue "ALI control pool has **************************************************"
-di in blue r(N)
-
-
-
+save "${pathOut}/controlpool_eczema", replace
 
 log close
 
