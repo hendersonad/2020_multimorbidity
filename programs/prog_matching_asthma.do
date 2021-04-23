@@ -94,7 +94,7 @@ clear
 set mem 5g
 set more off
 cd "`dataset_path'"
-
+/*
 noi dib "Match cases to ALL potential controls", stars
 
 use "`dataset'", clear
@@ -255,7 +255,7 @@ restore
 * Load data containing cases and all possible controls
 ********************************************************
 use "`dataset'_allpotentialmatches", clear
-
+noi dib "I am running!"
 * Next few commands order the dataset by increasing availability
 * of controls to give priority to those with fewest possible matches,
 	bysort id1:gen n1=_n
@@ -270,11 +270,11 @@ use "`dataset'_allpotentialmatches", clear
 	gen agediff=abs(year1-year0)
 * Reduce dataset to minimum number of variables required
 	keep id1 id0 caseset pracid1 agediff
-
+	compress
 	save "`dataset'_allpotentialmatches_1", replace
 
-
-	
+noi dib "I am still running I promise!"
+	*/
 ********************************************************
 * Next section selects up to `nocontrols' controls per case
 * There are three loops
@@ -295,10 +295,10 @@ set more off
 set seed 543210
 
 * Set up temporary postfile for patid numbers for cases and controls
-postfile temp6 long caseid long contid  using `dataset'_selected_matches, replace
+postfile temp6 long caseid long contid  using `dataset'_selected_matches_asthma, replace
 
 * create local macro containing list of practice ids
-qui levelsof pracid1 , local(pid)  
+qui levelsof pracid1 if pracid >= 878, local(pid)  
 
 
 foreach p of local pid  {    // Loop 1 thru each practice
@@ -348,7 +348,7 @@ erase "`dataset'_allpotentialmatches_1.dta"
 erase "`dataset'_sorted.dta" 
 
 *Summarise number of matches per case
-use `dataset'_selected_matches, clear
+use `dataset'_selected_matches_asthma, clear
 bysort caseid:gen n1=_n
 bysort caseid:gen N1=_N
 tab N1

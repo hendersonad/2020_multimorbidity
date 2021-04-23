@@ -68,8 +68,8 @@ if "`dontwarn'"==""{
 		noi di in green "Warning, current data in memory will be erased!"
 		noi di in green "***********************************************"
 		noi di 
-		noi di "Press y (then return) to confirm or anything else to quit" _request(keyentry)
-		if "$keyentry"!="y" error 1
+		//noi di "Press y (then return) to confirm or anything else to quit" _request(keyentry)
+		//if "$keyentry"!="y" error 1
 		}
 
 

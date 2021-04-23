@@ -53,7 +53,7 @@ set more off
 
 local timestart=c(current_time)
 
-/*
+
 /********************************************************************************************
 *1. Extract full patient data for patients in the defined patient list, practice by practice
 *    ... and while doing so, process each file to label and convert dates etc...
@@ -62,7 +62,7 @@ local timestart=c(current_time)
 noi dib "Extracting from `practot' practices:", stars
 
 //local files Additional Clinical Consultation Immunisation Patient Referral Test Therapy 
-local files  Patient 
+local files Test 
 
 foreach file of local files {
 	noi dib "`file'"
@@ -88,7 +88,7 @@ noi dib "Appending practices:", stars
 
 
 //local files Additional Clinical Consultation Immunisation Patient Referral Test Therapy 
-local files Patient
+local files  Clinical Consultation Immunisation Patient Referral Test 
 foreach file of local files {
 noi dib "`file'"
 
@@ -102,6 +102,7 @@ while `filenum' <= `practot' {
 	
 	local fileexists=0
 	while `fileexists'==0 & `filenum'<=`practot'{
+	di `filenum', _continue
 	cap use "$gprdfiles/`file'`filenum'", clear
 	if _rc!=0 & _rc!=601 exit _rc
 	if _rc==0 local fileexists=1
@@ -132,7 +133,7 @@ local time_finishAppend_`file' = c(current_time)
 
 noi dib "Appended practice files created; erasing individual extract practice files:", stars
 //local files Additional Clinical Consultation Patient Referral Test Therapy Immunisation 
-local files Patient 
+local files  Clinical Consultation Immunisation Patient Referral Test 
 foreach file of local files {
 noi dib "`file'"
 forvalues i=1/`practot'  {
@@ -141,7 +142,7 @@ forvalues i=1/`practot'  {
 			}	
 }
 
-local time_finishErasing = c(current_time)*/
+local time_finishErasing = c(current_time)
 *******************************************************************************
 *3. Produce a practice file for included practices only 
 *******************************************************************************
@@ -157,7 +158,6 @@ drop patid
 save "$gprdfiles/Practice_extract_${studyname}_1", replace
 
 } /*end of quietly*/
-
 
 *CHECK N IN PATIENT FILE AGAINST N IN DEFINE FILE (because Ian had a random problem with these not matching once)
 use "$gprdfiles/Patient_extract_${studyname}_1", clear
@@ -186,11 +186,13 @@ local col=45
 noi di "Time of starting = " _col(`col') "`timestart'"
 noi di "Time of finishing = " _col(`col') "`time_finishPracticefile'"
 noi dib "", ul
-foreach file in Additional Clinical Consultation Patient Referral Test Therapy Immunisation{
+//foreach file in Additional Clinical Consultation Patient Referral Test Therapy Immunisation{
+foreach file in Clinical Consultation Immunisation Patient Referral Test{
 noi di "Time finished extracting `file' = " _col(`col') "`time_finishExt_`file''"
 }
 noi dib "", ul
-foreach file in Additional Clinical Consultation Patient Referral Test Therapy Immunisation{
+//foreach file in Additional Clinical Consultation Patient Referral Test Therapy Immunisation{
+foreach file in Clinical Consultation Immunisation Patient Referral Test{
 noi di "Time finished appending `file' = " _col(`col') "`time_finishAppend_`file''"
 }
 noi di 

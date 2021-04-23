@@ -58,11 +58,11 @@ local timestart=c(current_time)
 *1. Extract full patient data for patients in the defined patient list, practice by practice
 *    ... and while doing so, process each file to label and convert dates etc...
 ********************************************************************************************/
-
+/*
 noi dib "Extracting from `practot' practices:", stars
 
 //local files Additional Clinical Consultation Immunisation Patient Referral Test Therapy 
-local files  Clinical Consultation Immunisation Patient Referral Test 
+local files  Clinical Immunisation Patient Referral     
 
 foreach file of local files {
 	noi dib "`file'"
@@ -73,22 +73,22 @@ foreach file of local files {
 		if _rc!=0 & _rc!=601 exit _rc
 		if _rc==0{ /*i.e. if practice number exists*/
 			qui merge m:1 patid using "$gprdfiles/results_$studyname", keep(match) keepusing(patid) nogen
-			if _N>0 save "$gprdfiles/`file'`i'", replace /*i.e. save a file for the practice if any patients matched in the merge*/
+			if _N>0 save "$gprdfiles/`file'`i'_$studyname", replace /*i.e. save a file for the practice if any patients matched in the merge*/
 		}/*end of if _rc==0 */
 	} /*end of loop for practices*/
 local time_finishExt_`file' = c(current_time)
 } /*end of loop for file types*/
-
+*/
 
 /*************************************************************************************************
 *2. Combine (append) by-practice files into smaller number of files (governed by memory available)
 *************************************************************************************************/
-
+/*
 noi dib "Appending practices:", stars
 
 
 //local files Additional Clinical Consultation Immunisation Patient Referral Test Therapy 
-local files  Clinical Consultation Immunisation Patient Referral Test 
+local files  Consultation   
 foreach file of local files {
 noi dib "`file'"
 
@@ -103,14 +103,14 @@ while `filenum' <= `practot' {
 	local fileexists=0
 	while `fileexists'==0 & `filenum'<=`practot'{
 	di `filenum', _continue
-	cap use "$gprdfiles/`file'`filenum'", clear
+	cap use "$gprdfiles/`file'`filenum'_$studyname", clear
 	if _rc!=0 & _rc!=601 exit _rc
 	if _rc==0 local fileexists=1
 	local filenum = `filenum'+1
 	}
 	
 	while `memoryused' < $gprd_memavail & `filenum'<=`practot'{
-			cap append using "$gprdfiles/`file'`filenum'"
+			cap append using "$gprdfiles/`file'`filenum'_$studyname"
 			if _rc!=0 & _rc!=601 exit _rc
 			qui d
 			local memoryused = ((r(width)+2*4)*_N)/1073741824
@@ -128,25 +128,26 @@ while `filenum' <= `practot' {
 local time_finishAppend_`file' = c(current_time)
 } /*end of loop for file type*/
 
-
+*/
 *Erase by-practice files
 
 noi dib "Appended practice files created; erasing individual extract practice files:", stars
-//local files Additional Clinical Consultation Patient Referral Test Therapy Immunisation 
-local files  Clinical Consultation Immunisation Patient Referral Test 
+local files Additional Clinical Consultation Patient Referral Test Therapy Immunisation 
+//local files  Consultation  
 foreach file of local files {
 noi dib "`file'"
 forvalues i=1/`practot'  {
-		cap erase "$gprdfiles/`file'`i'.dta"
+		cap erase "$gprdfiles/`file'`i'_$studyname.dta"
 		if _rc!=0 & _rc!=601 exit _rc
 			}	
 }
 
 local time_finishErasing = c(current_time)
+
 *******************************************************************************
 *3. Produce a practice file for included practices only 
 *******************************************************************************
-
+/*
 *Practice File
 noi dib "Generating a Practice.dta file with practice info for practices included in final dataset...", stars
 use "$gprdfiles/results_$studyname" , clear
@@ -156,7 +157,7 @@ if _rc!=0 qui merge m:1 pracid using "$path_STATA/Practice", keep(match) nogen
 collapse (max) patid, by(pracid lcd uts region)
 drop patid
 save "$gprdfiles/Practice_extract_${studyname}_1", replace
-
+*/
 } /*end of quietly*/
 
 
