@@ -22,7 +22,7 @@ DESCRIPTION OF FILE:	Aims to compile the extracted data and convert
 version 15
 clear all
 capture log close
-
+adopath + C:\Users\lsh1510922\Documents\2020_multimorbidity
 * find path file location and run it
 mm_extract paths
 
@@ -36,7 +36,7 @@ log using "${pathLogs}/${filename}", text replace
 /*******************************************************************************
 >> choose study type
 *******************************************************************************/
-local study = "asthma"
+local study = "eczema"
 
 cd ${pathIn}
 
@@ -96,7 +96,9 @@ forvalues i = 1/`obs' {
 	cap append using "`study'Cohort_readchapters\save`i'"
 }
 save `study'_READ.dta, replace
-export delimited `study'_READ_excel.csv, replace
+//export delimited `study'_READ_excel.csv, replace
+
+local study = "asthma"
 
 cd `study'Cohort_readchapters
 local list : dir . files "save*"

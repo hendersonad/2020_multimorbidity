@@ -1,6 +1,7 @@
 clear
 adopath + C:/Users/lsh1510922/Documents/2020_multimorbidity
 mm_extract paths
+global pathAnalysis "Z:\GPRD_GOLD\Ali\2020_multimorbidity\analysis"
 
 local study = "eczema"
 di "`study'"
@@ -30,7 +31,7 @@ save "${pathOut}/`study'_PatidInfo.dta", replace
 rename caseid patid
 collapse (mean) patid (max) id, by(setno)
 replace id=id+1
-merge 1:1 patid using "${pathOut}/expANDunexppool-main-multimorb-`study'-CCmatch_sorted.dta" ///
+merge 1:1 patid using "${pathOut}/expANDunexppool-main-multimorb-`study'-CCmatch.dta" ///
 	, keep(3)
 replace case =1
 assert case==1
@@ -43,7 +44,8 @@ save "${pathOut}/`study'_PatidInfo_cases.dta", replace
 //merge on control info 
 use "${pathOut}/`study'_PatidInfo.dta", clear
 rename contid patid
-merge m:1 patid using "${pathOut}/expANDunexppool-main-multimorb-`study'-CCmatch_sorted.dta" ///
+
+merge m:1 patid using "${pathOut}/expANDunexppool-main-multimorb-`study'-CCmatch.dta" ///
 	, keep(3)
 tab case _merge
 replace case = 0 
@@ -52,4 +54,4 @@ keep setno id case pracid sex yeardob  startdate enddate indexdate
 
 append using "${pathOut}/`study'_PatidInfo_cases.dta"
 
-export delim "${pathOut}/`study'_PatidInfo_full.csv", replace
+export delim "${pathAnalysis}/`study'_PatidInfo_full.csv", replace

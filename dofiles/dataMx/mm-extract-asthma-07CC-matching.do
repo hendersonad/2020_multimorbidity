@@ -136,6 +136,7 @@ Number of cases with zero potential matches = 175
 */
 	
 use "${pathOut}/expANDunexppool-main-multimorb-asthma-CCmatch_selected_matches", clear
+append using "${pathOut}/expANDunexppool-main-multimorb-asthma-CCmatch_selected_matches_asthma"
 bysort caseid:gen n1=_n
 bysort caseid:gen N1=_N
 tab N1
@@ -145,8 +146,20 @@ collapse (max)N1, by(caseid)
 nopeople caseid
 noi tab N1
 restore
+/*
 
-use "${pathOut}/expANDunexppool-main-multimorb-asthma-CCmatch_selected_matches", clear
+   (max) N1 |      Freq.     Percent        Cum.
+------------+-----------------------------------
+          1 |         31        0.01        0.01
+          2 |         29        0.01        0.01
+          3 |         29        0.01        0.02
+          4 |         42        0.01        0.03
+          5 |    489,692       99.97      100.00
+------------+-----------------------------------
+      Total |    489,823      100.00
+*/
+save "${pathOut}/expANDunexppool-main-multimorb-asthma-CCmatch_selected_matches_combined", replace
+//use "${pathOut}/expANDunexppool-main-multimorb-asthma-CCmatch_selected_matches_combined", clear
 
 keep caseid 
 duplicates drop caseid , force
@@ -154,7 +167,7 @@ rename caseid contid
 tempfile cases
 save `cases', replace
 
-use "${pathOut}/expANDunexppool-main-multimorb-asthma-CCmatch_selected_matches", clear
+use "${pathOut}/expANDunexppool-main-multimorb-asthma-CCmatch_selected_matches_combined", clear
 keep contid
 
 append using `cases'  

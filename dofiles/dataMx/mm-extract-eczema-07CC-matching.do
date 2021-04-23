@@ -57,9 +57,9 @@ macro drop _all
 >> identify file locations and set any locals
 *******************************************************************************/
 * cd to location of file containing all file paths
-adopath + "J:\EHR-working\Ali\2020_multimorbidity"
-adopath + "J:\EHR share\ado"
-
+*adopath + "J:\EHR-working\Ali\2020_multimorbidity"
+*adopath + "J:\EHR share\ado"
+adopath + C:\Users\lsh1510922\Documents\2020_multimorbidity
 mm_extract paths
 
 run "dofiles\Kate_matching\prog_matching.do"
@@ -182,6 +182,9 @@ explicitely now
 cap log close
 
 rungprddlg_skinepi, define(0) extract(1) build(July 2020) directory(${MMpathIn}) ///
+	studyname(mm_eczema_extract_matched) memorytoassign(2g)
+
+rungprddlg_therapy, define(0) extract(1) build(July 2020) directory(${MMpathIn}) ///
 	studyname(mm_eczema_extract_matched) memorytoassign(2g)
 
 
