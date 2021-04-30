@@ -14,10 +14,12 @@ library(lmerTest)
 library(cluster)
 library(factoextra)
 library(dendextend)
+library(here)
+library(igraph)
 
 
 # Load simplified data
-load("simpdata_asthma.RData")
+load(here("datafiles","simpdata_asthma.RData"))
 
 mipid <- 1028
 refde <- "2020-12-12"
@@ -52,7 +54,7 @@ for(c in grep('fi_', names(dpw))) dpw[,c] <- as.numeric( dpw[,c] - dpw$tb ) /365
 save(dpw, file="datawide_asthma.RData")
 
 
-load("datawide_asthma.RData")
+load(here("datafiles/datawide_asthma.RData"))
 
 
 ###############################################################.
@@ -158,7 +160,7 @@ save(edj, file="edges2_jac1_asthma.RData")
 ###
 
 
-load("edges2_jac1_asthma.RData")
+load(here::here("datafiles", "edges2_jac1_asthma.RData"))
 
 # Put probability of 2 events given one
 edj <- mutate(edj, 
@@ -178,7 +180,7 @@ for (i in c('m', 'w')) {
 abline(a=0, b=1)
 
 # Read chapter names and put them in edges data
-rch <- read_csv("read_chapters.csv")
+rch <- read_csv(here::here("out/data/read_chapters.csv"))
 edj <- mutate(edj, e1=paste(substring(f1,4,4),rch$content[match(substring(f1,4,4), rch$chapter)], sep="_"), 
               e2=paste(substring(f2,4,4), rch$content[match(substring(f2,4,4), rch$chapter)], sep="_"))
 
@@ -239,8 +241,6 @@ plot(h0, col=rgb(0.8,0.8,0.8,0.5), add=T)
 
 title("Histograms: 171 disease pair regressions", outer=T)
 
-
-
 # categorical covariates
 barplot(cbind(c()), beside=TRUE)
 
@@ -292,16 +292,10 @@ for (k in c(50,18)) {
       text(0,19.5,"Read code chapter:", pos=4, xpd=NA, cex=0.9, font=2)
       axis(1,at=xp<-seq(0,1,0.1), labels=1-xp, las=1)
       abline(v=c(0.5, 0.7), lty=2)
-      
     }
   }
 }
 dev.off()
-
-
-
-
-
 
 
 ###########################################.
