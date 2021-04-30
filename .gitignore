@@ -7,3 +7,10 @@ docs/~$Fig1_flowDiagram.pptx
 ~$nkageRequest form Multimorbidity.doc
 out/~$tab1_readChapters_processing.xlsx
 .Rproj.user
+*.pptx
+*.pdf
+*.png
+*.docx
+*.afdesign
+*.RData
+*.xlsx
