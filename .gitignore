@@ -1,11 +1,11 @@
 *.log
 posted/
 datafiles/
-~$Multimorbidity flow diagrams.xlsx
+
 .DS_Store
-docs/~$Fig1_flowDiagram.pptx
-~$nkageRequest form Multimorbidity.doc
-out/~$tab1_readChapters_processing.xlsx
+
+
+*.doc
 .Rproj.user
 *.pptx
 *.pdf
