@@ -80,32 +80,41 @@ dendo_plot <- function(data_in, k = 50, j = "m", i = 0, shortnames = FALSE){
     if(shortnames == FALSE){mtext(side = 1, "Probability of one condition given the other", cex=1.3, font=1, padj=3, adj =0)}
   axis(1,at=xp<-seq(0,1,0.1), labels=1-xp, las=1, cex=0.8)
   abline(v=c(0.7), lty=2, col="gray30")
+
+}
+dendo_table <- function(data_in, k = 50, j = "m", i = 0, shortnames = FALSE){
+  edj2 <- format_edges(data_in)
+  
+  ## create dissimilarity matrix
+  ddm <- data.frame(e1=unique(c(edj2$e1,edj2$e2)), e2=unique(c(edj2$e1,edj2$e2)), 
+                    rm0_50=1, rm1_50=1, rw0_50=1, rw1_50=1, rm0_18=1, rm1_18=1, rw0_18=1, rw1_18=1)
+  ddm <- rbind(edj2[,c("e1","e2", "rm0_50","rm1_50", "rw0_50","rw1_50", "rm0_18","rm1_18", "rw0_18","rw1_18")],ddm)
+
+  md0 <- tapply(c(1-ddm[, paste0('r',j,i,'_',k)]), ddm[,c("e1","e2")], mean)
+  hc0 <- hclust(as.dist(t(md0)))
+  dhc0 <- as.dendrogram(hc0)
+  
+  big_group <- dendextend::cutree(dhc0, h=0.7)
+  df_group <- tibble(x = names(big_group), y = big_group)
+  df_biggest_group <- df_group %>%
+    group_by(y) %>%
+    tally() %>%
+    filter(n == max(n))
+  df_out <- df_group %>%
+    filter(y == df_biggest_group$y)
+  if(shortnames){
+    vec_out <- as.character(substr(df_out$x,1,1))
+  }else{
+    vec_out <- as.character(df_out$x)
+    }
+  paste0(vec_out, collapse = "; ")
 }
 
-
-#pdf(here("out/test_big.pdf"), 12,12)
-#par(mfrow = c(2,2), mar=c(4,3,1,13))
-## young men
+## test
 dendo_plot(data_in = edj_eczema, k = 18, j = "m", i = 0)
 dendo_plot(data_in = edj_asthma, k = 18, j = "m", i = 0)
-# dendo_plot(data_in = edj_eczema, k = 18, j = "m", i = 1)
-# dendo_plot(data_in = edj_asthma, k = 18, j = "m", i = 1)
-# ## young women
-# dendo_plot(data_in = edj_eczema, k = 18, j = "m", i = 0)
-# dendo_plot(data_in = edj_asthma, k = 18, j = "m", i = 0)
-# dendo_plot(data_in = edj_eczema, k = 18, j = "m", i = 1)
-# dendo_plot(data_in = edj_asthma, k = 18, j = "m", i = 1)
-# ## old men
-# dendo_plot(data_in = edj_eczema, k = 50, j = "m", i = 0)
-# dendo_plot(data_in = edj_asthma, k = 50, j = "m", i = 0)
-# dendo_plot(data_in = edj_eczema, k = 50, j = "m", i = 1)
-# dendo_plot(data_in = edj_asthma, k = 50, j = "m", i = 1)
-# ## old women
-# dendo_plot(data_in = edj_eczema, k = 50, j = "w", i = 0)
-# dendo_plot(data_in = edj_asthma, k = 50, j = "w", i = 0)
-# dendo_plot(data_in = edj_eczema, k = 50, j = "w", i = 1)
-# dendo_plot(data_in = edj_asthma, k = 50, j = "w", i = 1)
-#dev.off()
+#
+dendo_table(data_in = edj_asthma, k = 18, j = "m", i = 0)
 
 # network plots -----------------------------------------------------------
 ntwk_nodes <- function(cohort = "asthma"){
@@ -151,7 +160,7 @@ ntwk_plot <- function(cohort = "asthma", k = 50, j = "m", i = 1){
       
       temp_names <- V(net)$label
       V(net)$label <- substr(temp_names,1,1)
-      E(net)$width <- E(net)$weight*5
+      E(net)$width <- (E(net)$weight)*5
       E(net)$label <- NA
       
       col <- ifelse(i == 1, 
@@ -161,18 +170,73 @@ ntwk_plot <- function(cohort = "asthma", k = 50, j = "m", i = 1){
                      rgb(0,0,139, maxColorValue = 255, alpha = 120), 
                      rgb(255,60,71, maxColorValue = 255, alpha = 120))
       
-      plot(net, vertex.color = "gray80", 
+      plot(net, vertex.color = rgb(0,0,0, alpha = 0.1), 
            vertex.label.color = col,
            edge.color = colA,
            vertex.shape = "circle",
-           vertex.frame.color = NA,
+           vertex.frame.color = rgb(0,0,0, alpha = 0.5),
            vertex.label.font = 2,
            edge.curved=.1)
       #net <- visNetwork(nodes, edges, main=tit) %>% visNodes(shape="ellipse") %>% visIgraphLayout(randomSeed = 1999) %>% visEdges(width="width", smooth =T)
       #print(net)
 }
 ntwk_plot(cohort = "asthma", k = 50, j = "w", i = 0)
-ntwk_plot(cohort = "eczema", k = 50, j = "w", i = 0)
+ntwk_plot(cohort = "asthma", k = 50, j = "w", i = 1)
+
+# make cluster table ------------------------------------------------------
+tab_clusters <- rbind.data.frame(
+  cbind("Eczema 18; men",dendo_table(edj_eczema, k=18, j="m",i=1, shortnames = F)),
+  cbind("Asthma 18; men",dendo_table(edj_asthma, k=18, j="w",i=1, shortnames = F)),
+  cbind("Eczema 50; men",dendo_table(edj_eczema, k=50, j="m",i=1, shortnames = F)),
+  cbind("Asthma 50; men",dendo_table(edj_asthma, k=50, j="w",i=1, shortnames = F)),
+  cbind("Eczema 18; women",dendo_table(edj_eczema, k=18, j="m",i=1, shortnames = F)),
+  cbind("Asthma 18; women",dendo_table(edj_asthma, k=18, j="w",i=1, shortnames = F)),
+  cbind("Eczema 50; women",dendo_table(edj_eczema, k=50, j="m",i=1, shortnames = F)),
+  cbind("Asthma 50; women",dendo_table(edj_asthma, k=50, j="w",i=1, shortnames = F)),
+  cbind("Eczema controls; 18; men",dendo_table(edj_eczema, k=18, j="m",i=0, shortnames = F)),
+  cbind("Asthma controls; 18; men",dendo_table(edj_asthma, k=18, j="w",i=0, shortnames = F)),
+  cbind("Eczema controls; 50; men",dendo_table(edj_eczema, k=50, j="m",i=0, shortnames = F)),
+  cbind("Asthma controls; 50; men",dendo_table(edj_asthma, k=50, j="w",i=0, shortnames = F)),
+  cbind("Eczema controls; 18; women",dendo_table(edj_eczema, k=18, j="m",i=0, shortnames = F)),
+  cbind("Asthma controls; 18; women",dendo_table(edj_asthma, k=18, j="w",i=0, shortnames = F)),
+  cbind("Eczema controls; 50; women",dendo_table(edj_eczema, k=50, j="m",i=0, shortnames = F)),
+  cbind("Asthma controls; 50; women",dendo_table(edj_asthma, k=50, j="w",i=0, shortnames = F))
+)
+
+tab_clusters <- tab_clusters %>%
+  rename("group"=V1, "cluster"=V2)
+
+write.csv(tab_clusters, file = here("out/tab2.csv"), row.names = F)
+
+tab_clusters_short <- rbind.data.frame(
+  cbind("Eczema 18; men",dendo_table(edj_eczema, k=18, j="m",i=1, shortnames = T)),
+  cbind("Asthma 18; men",dendo_table(edj_asthma, k=18, j="w",i=1, shortnames = T)),
+  cbind("Eczema 50; men",dendo_table(edj_eczema, k=50, j="m",i=1, shortnames = T)),
+  cbind("Asthma 50; men",dendo_table(edj_asthma, k=50, j="w",i=1, shortnames = T)),
+  cbind("Eczema 18; women",dendo_table(edj_eczema, k=18, j="m",i=1, shortnames = T)),
+  cbind("Asthma 18; women",dendo_table(edj_asthma, k=18, j="w",i=1, shortnames = T)),
+  cbind("Eczema 50; women",dendo_table(edj_eczema, k=50, j="m",i=1, shortnames = T)),
+  cbind("Asthma 50; women",dendo_table(edj_asthma, k=50, j="w",i=1, shortnames = T)),
+  cbind("Eczema controls; 18; men",dendo_table(edj_eczema, k=18, j="m",i=0, shortnames = T)),
+  cbind("Asthma controls; 18; men",dendo_table(edj_asthma, k=18, j="w",i=0, shortnames = T)),
+  cbind("Eczema controls; 50; men",dendo_table(edj_eczema, k=50, j="m",i=0, shortnames = T)),
+  cbind("Asthma controls; 50; men",dendo_table(edj_asthma, k=50, j="w",i=0, shortnames = T)),
+  cbind("Eczema controls; 18; women",dendo_table(edj_eczema, k=18, j="m",i=0, shortnames = T)),
+  cbind("Asthma controls; 18; women",dendo_table(edj_asthma, k=18, j="w",i=0, shortnames = T)),
+  cbind("Eczema controls; 50; women",dendo_table(edj_eczema, k=50, j="m",i=0, shortnames = T)),
+  cbind("Asthma controls; 50; women",dendo_table(edj_asthma, k=50, j="w",i=0, shortnames = T))
+)
+
+tab_clusters_short <- tab_clusters_short %>%
+  rename("group"=V1, "cluster"=V2)
+
+write.csv(tab_clusters, file = here("out/tab2_short.csv"), row.names = F)
+tab_clusters_full <- tab_clusters %>%
+  bind_cols(
+    select(tab_clusters_short, "short" = "cluster")
+    ) %>%
+  select("group","short","cluster")
+write.csv(tab_clusters_full, file = here("out/tab2_full.csv"), row.names = F)
 
 # combine plots  ----------------------------------------------------------
 plot_together <- function(cohort = "eczema", k = 50, j = "m"){
@@ -372,26 +436,26 @@ dev.off()
 pdf(here::here("out/fig2_ast_men.pdf"), 13, 13)
 par(mar=c(4,2,3,5))
 par(mfrow = c(2,2))
-  dendo_plot(data_in = edj_eczema, i = 1, k = 18, j = "m")
+  dendo_plot(data_in = edj_asthma, i = 1, k = 18, j = "m")
     mtext(side = 3, "A: Age 18, men with asthma", adj = 0, font = 2)
-  dendo_plot(data_in = edj_eczema, i = 0, k = 18, j = "m")
+  dendo_plot(data_in = edj_asthma, i = 0, k = 18, j = "m")
     mtext(side = 3, "B: Age 18, matched controls", adj = 0, font = 2)
-  dendo_plot(data_in = edj_eczema, i = 1, k = 50, j = "m")
+  dendo_plot(data_in = edj_asthma, i = 1, k = 50, j = "m")
     mtext(side = 3, "C: Age 50, men with asthma", adj = 0, font = 2)
-  dendo_plot(data_in = edj_eczema, i = 0, k = 50, j = "m")
+  dendo_plot(data_in = edj_asthma, i = 0, k = 50, j = "m")
     mtext(side = 3, "D: Age 50, matched controls", adj = 0, font = 2)
 dev.off()
 
 pdf(here::here("out/fig2_ast_women.pdf"), 13, 13)
 par(mar=c(4,2,3,5))
 par(mfrow = c(2,2))
-  dendo_plot(data_in = edj_eczema, i = 1, k = 18, j = "w")
+  dendo_plot(data_in = edj_asthma, i = 1, k = 18, j = "w")
     mtext(side = 3, "A: Age 18, women with asthma", adj = 0, font = 2)
-  dendo_plot(data_in = edj_eczema, i = 0, k = 18, j = "w")
+  dendo_plot(data_in = edj_asthma, i = 0, k = 18, j = "w")
     mtext(side = 3, "B: Age 18, matched controls", adj = 0, font = 2)
-  dendo_plot(data_in = edj_eczema, i = 1, k = 50, j = "w")
+  dendo_plot(data_in = edj_asthma, i = 1, k = 50, j = "w")
     mtext(side = 3, "C: Age 50, women with asthma", adj = 0, font = 2)
-  dendo_plot(data_in = edj_eczema, i = 0, k = 50, j = "w")
+  dendo_plot(data_in = edj_asthma, i = 0, k = 50, j = "w")
     mtext(side = 3, "D: Age 50, matched controls", adj = 0, font = 2)
 dev.off()
 
