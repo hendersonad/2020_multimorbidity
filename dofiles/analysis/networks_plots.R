@@ -170,6 +170,16 @@ ntwk_plot <- function(cohort = "asthma", k = 50, j = "m", i = 1){
                      rgb(0,0,139, maxColorValue = 255, alpha = 120), 
                      rgb(255,60,71, maxColorValue = 255, alpha = 120))
       
+      label_plot <- paste0("Connections: ", length(E(net)$width),"\n")
+      label_plot2 <- edges %>% 
+        arrange(-weight) %>% 
+        slice(1) %>%
+        mutate(lab2 = paste0(substr(from,4,4),"<>",substr(to,4,4),": ", label, "\n")) %>% 
+        pull(lab2)
+      label_plot2 <- paste0(label_plot2,collapse = " ")
+      label_plot2 <- paste0("Max prob: ", label_plot2)
+      
+      label_plot3 <- paste0(label_plot, label_plot2)
       plot(net, vertex.color = rgb(0,0,0, alpha = 0.1), 
            vertex.label.color = col,
            edge.color = colA,
@@ -177,6 +187,9 @@ ntwk_plot <- function(cohort = "asthma", k = 50, j = "m", i = 1){
            vertex.frame.color = rgb(0,0,0, alpha = 0.5),
            vertex.label.font = 2,
            edge.curved=.1)
+      mtext(side=1, label_plot3, font=1, cex = 0.7, adj=0, padj=1)
+      #mtext(side=1, label_plot, font=1, cex = 0.7, adj=0, padj=1)
+      #mtext(side=1, label_plot2, font=1, cex = 0.7, adj=1, padj=1)
       #net <- visNetwork(nodes, edges, main=tit) %>% visNodes(shape="ellipse") %>% visIgraphLayout(randomSeed = 1999) %>% visEdges(width="width", smooth =T)
       #print(net)
 }
@@ -462,7 +475,7 @@ dev.off()
 
 # all networks ------------------------------------------------------------
 plot_all_ntwks <- function(ii = 0, cc = "eczema", l = 1){
-  par(mar = (c(0,0.5,3,0)))
+  par(mar = (c(3,0.5,3,0)+0.25))
   ntwk_plot(cohort = cc, i = ii, k = 18, j = "m")
     if(ii==1){
       mtext(side = 3, paste0(LETTERS[l],": Age 18, men ", cc), adj = 0, font = 2)
