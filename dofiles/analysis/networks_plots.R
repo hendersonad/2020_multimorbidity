@@ -174,7 +174,7 @@ ntwk_plot <- function(cohort = "asthma", k = 50, j = "m", i = 1){
       label_plot2 <- edges %>% 
         arrange(-weight) %>% 
         slice(1) %>%
-        mutate(lab2 = paste0(substr(from,4,4),"<>",substr(to,4,4),": ", label, "\n")) %>% 
+        mutate(lab2 = paste0(substr(from,4,4)," - ",substr(to,4,4),": ", label, "\n")) %>% 
         pull(lab2)
       label_plot2 <- paste0(label_plot2,collapse = " ")
       label_plot2 <- paste0("Max prob: ", label_plot2)
@@ -333,28 +333,28 @@ plot_all_dendo <- function(ii = 0, cc = "eczema", l = 1){
     mtext(side = 3, paste0(LETTERS[l],": Age 18, men ", cc), adj = 0, font = 2)
     #if(l==1100){mtext(side = 1, "Probability of one condition given the other", cex=1, font=1, padj=3, adj =0)}
   }else{
-    mtext(side = 3, paste0(LETTERS[l]), adj = 0, font = 2)
+    mtext(side = 3, paste0(LETTERS[l], ": matched controls ", cc,")"), adj = 0, font = 2)
   }
   dendo_plot(data_in = edj_plot, i = ii, k = 18, j = "w", shortnames = short)
     mtext(side = 1, "P(A|B)", cex=1, font=1, padj=pp, adj=1)
   if(ii==1){
     mtext(side = 3, paste0(LETTERS[l+1],": Age 18, women ", cc), adj = 0, font = 2)
   }else{
-    mtext(side = 3, paste0(LETTERS[l+1]), adj = 0, font = 2)
+    mtext(side = 3, paste0(LETTERS[l+1], ": matched controls ", cc,")"), adj = 0, font = 2)
   }
   dendo_plot(data_in = edj_plot, i = ii, k = 50, j = "m", shortnames = short)
     mtext(side = 1, "P(A|B)", cex=1, font=1, padj=pp, adj=1)
   if(ii==1){
     mtext(side = 3, paste0(LETTERS[l+2],": Age 50, men ", cc), adj = 0, font = 2)
   }else{
-    mtext(side = 3, paste0(LETTERS[l+2]), adj = 0, font = 2)
+    mtext(side = 3, paste0(LETTERS[l+2], ": matched controls ", cc,")"), adj = 0, font = 2)
   }
   dendo_plot(data_in = edj_plot, i = ii, k = 50, j = "w", shortnames = short)
     mtext(side = 1, "P(A|B)", cex=1, font=1, padj=pp, adj=1)
   if(ii==1){
     mtext(side = 3, paste0(LETTERS[l+3],": Age 50, women ", cc), adj = 0, font = 2)
   }else{
-    mtext(side = 3, paste0(LETTERS[l+3]), adj = 0, font = 2)
+    mtext(side = 3, paste0(LETTERS[l+3], ": matched controls (", cc,")"), adj = 0, font = 2)
   }
 }
 pdf(here::here("out/fig5_dendo_all.pdf"), 14, 14)
