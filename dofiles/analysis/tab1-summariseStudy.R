@@ -10,9 +10,10 @@ library(gridExtra)
 library(dataReporter) # https://github.com/ekstroem/dataReporter
 
 names <- read_csv(here("datafiles/chapter_names.csv"))
+readcodes <- haven::read_dta(here::here("datafiles", paste0(study,"_read_chapter.dta")))
 
 get_table1 <- function(study = "asthma"){
-  test <- read_csv(file = here::here("datafiles",paste0(study, "_patient_info.csv")))
+  study_info <- read_csv(file = here::here("datafiles",paste0(study, "_patient_info.csv")))
   case_control <- read_csv(file = here::here("datafiles",paste0(study, "_case_control_set.csv")))
   cases <- case_control %>%
     select(caseid) %>% 
@@ -22,7 +23,7 @@ get_table1 <- function(study = "asthma"){
     select(contid) %>% 
     distinct() %>%
     mutate(exposed = 0)
-  patid_CC  <- test %>%
+  patid_CC  <- study_info %>%
     select(patid, gender, realyob) %>%
     left_join(cases, by = c("patid" = "caseid")) %>%
     mutate(exp = replace_na(exposed, 0)) %>%
@@ -58,13 +59,6 @@ get_table1 <- function(study = "asthma"){
     select(var = agecut, control_n, control_pc , case_n , case_pc )
   agecut_summ
   
-  # pacman::p_load("pubh")
-  # test %>%
-  #   select(-c(id, setno)) %>%
-  #   #copy_labels(test) %>%
-  #   cross_tab(case ~ sex +.) %>%
-  #   theme_pubh()  
-  
   (t1 <- table(patid_CC$gender, patid_CC$exp))
   (t1p <- prop.table(t1, margin=2))
   sex_summ <- rbind(t1, t1p) 
@@ -85,7 +79,6 @@ get_table1 <- function(study = "asthma"){
   out1
   
   # READ chapter ------------------------------------------------------------
-  readcodes <- haven::read_dta(here::here("datafiles", paste0(study,"_read_chapter.dta")))
   DT <- data.table(readcodes)
   PTD <- data.table(patid_CC)
   
@@ -201,7 +194,9 @@ tab1 <- bind_rows(
   )  
 )
 
-tab1 <- tab1 %>% left_join(names, by = c("var")) %>%
+tab1 <- tab1 %>% 
+  filter(var != "W") %>%
+  left_join(names, by = c("var")) %>%
   mutate_at("name", ~ifelse(is.na(.), var, .)) %>%
   select(-var, var = name)
   
@@ -226,7 +221,7 @@ blank_rows <- slice(tab1, 1:3) %>%
 
 tab1_out <- bind_rows(tab1, summ_full2, blank_rows) %>%
   select("var",  "Ecase", "Econt", "Acase", "Acont") %>%
-  mutate(order = c(1,5:11,13:14,16:35,2:4,12,15)) %>%
+  mutate(order = c(1,5:10,12:13,15:33,2:4,11,14)) %>%
   arrange(order) %>% select(-order)
 
 write.csv(tab1_out, here::here("out/table1_v2.csv"))
@@ -245,16 +240,18 @@ DF_out <- bind_rows(
               values_from = c(control_n, control_pc, case_n, case_pc)) %>%
   select(var, ends_with("Asthma"), ends_with("Eczema")) %>%
   mutate_if(is.numeric, ~round(.,2)) %>%
-  mutate(asthma_dif = case_pc_asthma-control_pc_asthma,
-         eczema_dif = case_pc_eczema-control_pc_eczema)
+  mutate(asthma_dif = case_pc_Asthma-control_pc_Asthma,
+         eczema_dif = case_pc_Eczema-control_pc_Eczema)
 DF_out
 write_csv(DF_out, path = here::here("out", "table1.csv"))
 
 
 fig1 <- DF_out %>% 
   filter(!var %in% c("Female", "Male", "n", "age")) %>%
-  select(var, control_n_asthma, control_n_eczema, 
-         case_n_asthma, case_n_eczema) %>%
+  slice(7:dim(DF_out)[1]) %>%
+  filter(!var %in% c("W", "V")) %>%
+  select(var, control_n_Asthma, control_n_Eczema, 
+         case_n_Asthma, case_n_Eczema) %>%
   pivot_longer(names_to = "cohort", cols = -var) %>%
   separate(col = cohort, into = c("exp", "n", "condition"), sep = "_")
 
@@ -262,15 +259,14 @@ fig1 <- fig1 %>%
   left_join(names, by = "var") %>%
   mutate_at(c("exp", "condition"), ~stringr::str_to_title(.))
 
-
-
 ggplot(fig1, aes(x = name, y = value, colour = exp, fill = exp, group = exp)) +
   geom_col(position = position_dodge(), alpha = 0.2) +
   facet_wrap(~condition) +
   labs(x = "Read Chapter", y = "No. of primary care records", colour = "Exposed", fill = "Exposed") +
   coord_flip() +
   theme_bw() +
-  theme(strip.background = element_blank(), 
+  theme(legend.position = "top", 
+        strip.background = element_blank(), 
         axis.text.x = element_text(hjust = 1, angle = 65))
 dev.copy(pdf, here::here("out/Fig1.pdf"), width = 8, height = 5)
   dev.off()
@@ -278,8 +274,10 @@ dev.copy(pdf, here::here("out/Fig1.pdf"), width = 8, height = 5)
 
 fig2 <- DF_out %>% 
   filter(!var %in% c("Female", "Male", "n", "age")) %>%
-  select(var, control_pc_asthma, control_pc_eczema, 
-         case_pc_asthma, case_pc_eczema) %>%
+  slice(7:dim(DF_out)[1]) %>%
+  filter(!var %in% c("W", "V")) %>%
+  select(var, control_pc_Asthma, control_pc_Eczema, 
+         case_pc_Asthma, case_pc_Eczema) %>%
   pivot_longer(names_to = "cohort", cols = -var) %>%
   separate(col = cohort, into = c("exp", "n", "condition"), sep = "_")
 
@@ -293,9 +291,11 @@ ggplot(fig2, aes(x = name, y = value, colour = exp, fill = exp, group = exp)) +
   labs(x = "Read Chapter", y = "Percentage of all primary care records by Read chapter", colour = "Exposed", fill = "Exposed") +
   coord_flip() +
   theme_bw() +
-  theme(strip.background = element_blank(), 
+  theme(legend.position = "top", 
+        strip.background = element_blank(), 
         axis.text.x = element_text(hjust = 1, angle = 65))
 
 dev.copy(pdf, here::here("out/Fig1_pc.pdf"), width = 8, height = 5)
   dev.off()
+  
   
