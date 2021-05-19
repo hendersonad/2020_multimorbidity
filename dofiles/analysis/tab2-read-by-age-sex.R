@@ -9,7 +9,7 @@ library(here)
 library(grid)
 library(gridExtra)
 
-names <- read_csv(here("datafiles/chapter_names.csv"))
+names <- read_csv(here("codelists/chapter_names.csv"))
 
 ## Slightly bodgy way of finding max and min event date
 #readcodes <- haven::read_dta(here::here("datafiles", paste0(asthma,"_read_chapter.dta")))
@@ -25,10 +25,19 @@ readcodes$eventdate[readcodes$eventdate >= as.Date("2020-07-01") & !is.na(readco
 min(readcodes$eventdate, na.rm = T)
 max(readcodes$eventdate, na.rm = T)
 
+datapath <- "/Volumes/DATA/sec-file-b-volumea/EPH/EHR group/GPRD_GOLD/Ali/2020_multimorbidity/analysis/"
+
 # read summary by age/sex -------------------------------------------------
 summ_read_agesex <- function(study = "asthma"){
-  study_info <- read_csv(file = here::here("datafiles",paste0(study, "_patient_info.csv")))
-  case_control <- read_csv(file = here::here("datafiles",paste0(study, "_case_control_set.csv")))
+  if(grepl("macd0015", Sys.info()["nodename"])){
+    study_info <- read_csv(file = paste0(datapath, study, "_patient_info.csv"))
+    case_control <- read_csv(file = paste0(datapath, study, "_case_control_set.csv"))
+    readcodes <- haven::read_dta(paste0(datapath, study, "_read_chapter.dta"))
+  }else{
+    study_info <- read_csv(file = here::here("datafiles",paste0(study, "_patient_info.csv")))
+    case_control <- read_csv(file = here::here("datafiles",paste0(study, "_case_control_set.csv")))  
+    readcodes <- haven::read_dta(here::here("datafiles", paste0(study,"_read_chapter.dta")))
+  }
   cases <- case_control %>%
     select(caseid) %>% 
     distinct() %>%
@@ -97,7 +106,6 @@ summ_read_agesex <- function(study = "asthma"){
   out1$age = NA
   
   # READ chapter ------------------------------------------------------------
-  readcodes <- haven::read_dta(here::here("datafiles", paste0(study,"_read_chapter.dta")))
   DT <- data.table(readcodes)
   PTD <- data.table(patid_CC)
 
