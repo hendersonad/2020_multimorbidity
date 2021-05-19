@@ -5,6 +5,10 @@ library(readr)
 library(dplyr)
 library(tidyr)
 library(here)
+library(viridis)
+library(RColorBrewer)
+#devtools::install_github("thomasp85/scico")
+library(scico)
 
 # load data  --------------------------------------------------------------
 load(here("datafiles/edges2_jac1_asthma.RData"))
@@ -61,8 +65,20 @@ dendo_plot <- function(data_in, k = 50, j = "m", i = 0, shortnames = FALSE){
   md0 <- tapply(c(1-ddm[, paste0('r',j,i,'_',k)]), ddm[,c("e1","e2")], mean)
   hc0 <- hclust(as.dist(t(md0)))
   dhc0 <- as.dendrogram(hc0)
-  labels_cex(dhc0) <- 1.2
-  dhc0 <- color_branches(dhc0, h=0.7, groupLabels = T)
+  labels_cex(dhc0) <- 1.4
+
+  if(i==0){
+    ali_colours <- function(n){viridis(n, alpha = 1, begin = 0.2, end = 0.8, option = "inferno")}
+    ali_colours <- function(n){scico(n, palette = "lajolla",alpha = 1, begin = 0.3, end = 0.7)}
+    line_col <- scico(1, palette = "lajolla", begin = 0.5)
+    dhc0 <- ali_branch(dhc0, h=0.7, col=ali_colours, groupLabels = T)
+  }else{
+    ali_colours <- function(n){viridis(n, alpha = 1, begin = 0.2, end = 0.8, option = "mako")}
+    ali_colours <- function(n){scico(n, palette = "lapaz",alpha = 1, begin = 0.3, end = 0.7)}
+    line_col <- scico(1, palette = "lapaz", begin = 0.5)
+    dhc0 <- ali_branch(dhc0, h=0.7, col=ali_colours, groupLabels = T)
+  }  
+  
   tit <- paste0('Age ', k, ', ', ifelse(j=='m','men', 'women'), ': ', 
                 ifelse(i==0, 'matched controls', 'asthma'), ' (complete linkage)')
   
@@ -70,18 +86,19 @@ dendo_plot <- function(data_in, k = 50, j = "m", i = 0, shortnames = FALSE){
   short_labs <- substr(labels(dhc0),1,1)
   old_labs <- labels(dhc0)
   labels_colors(dhc0) <- 1
-  grepl("M:", labels(dhc0))
+  
   labels_colors(dhc0)[grepl("M:", labels(dhc0))] <- 2
   labels_colors(dhc0)[grepl("H:", labels(dhc0))] <- 2
   
   dhc0 %>%
     hang.dendrogram(hang = 0.1) %>% 
-    plot(ylab="", axes=F, horiz=T, xlab="",main="") 
+    plot(ylab="", axes=F, horiz=T, xlab="",main="")  
+    
     if(shortnames == FALSE){mtext(side = 1, "Probability of one condition given the other", cex=1.3, font=1, padj=3, adj =0)}
   axis(1,at=xp<-seq(0,1,0.1), labels=1-xp, las=1, cex=0.8)
-  abline(v=c(0.7), lty=2, col="gray30")
-
+  abline(v=c(0.7), lty=2, col=line_col, lwd = 2 )
 }
+##
 dendo_table <- function(data_in, k = 50, j = "m", i = 0, shortnames = FALSE){
   edj2 <- format_edges(data_in)
   
@@ -319,7 +336,7 @@ dev.off()
 plot_all_dendo <- function(ii = 0, cc = "eczema", l = 1){
   short <- T
   #if(l!=1){par(mar=c(2,2,1.5,2)+0.5)}else{par(mar=c(4,2,1.5,2)+0.5)}
-  par(mar=c(3,2,1.5,2)+0.5)
+  par(mar=c(4,2,2,2)-0.5)
   
   if(cc == "eczema"){
     edj_plot = edj_eczema
