@@ -64,17 +64,10 @@ global filename "mm-extract-asthma-03Exposed"
 log using "${pathLogs}/${filename}", text replace
 
 
-
-
-
-
-
-
-
 /*******************************************************************************
 #2. Identify people with an asthma morbidity code Dx (Read or ICD-10)
 *******************************************************************************/
-* first identify the date of first eczema diagnosis
+* first identify the date of first asthma diagnosis
 use "$pathIn/results_mm_extract_asthma", clear
 
 
@@ -111,16 +104,6 @@ notes: ${filename} / TS
 sort patid 
 compress
 save "${pathOut}/asthmaExposed", replace
-
-
-
 unique patid // 2146815
-
-
-
-
-
-
-
 
 log close      
