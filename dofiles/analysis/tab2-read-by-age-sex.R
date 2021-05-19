@@ -73,17 +73,19 @@ summ_read_agesex <- function(study = "asthma"){
            case_pc = (case_n / sum(case_n))) %>%
     select(var = agecut, control_n, control_pc , case_n , case_pc )
   agecut_summ
+  if(sum(agecut_summ$case_n) != n_summ$case_n){stop("Sum age groups don't match total")}
   
   (t1 <- table(patid_CC$gender, patid_CC$exp))
   (t1p <- prop.table(t1, margin=2))
   sex_summ <- rbind(t1, t1p) 
   sex_summ_df <- as.data.frame(apply(sex_summ, 2, unlist))
-  names(sex_summ_df) <- c("case", "control")
   sex_summ_df$gender <- rownames(sex_summ)
   sex_summ_df <- sex_summ_df %>%
+    rename(control = `0`, case = `1`) %>%
     mutate(var = c("n","n","pc","pc")) %>%
     pivot_wider(id_cols = gender, names_from = var, values_from = c(case, control)) %>%
     select(var = gender, control_n , control_pc, case_n , case_pc)
+  if(sum(sex_summ_df$case_n) != n_summ$case_n){stop("Sum age groups don't match total")}
   
   out1 <- bind_rows(
     n_summ,
@@ -99,6 +101,9 @@ summ_read_agesex <- function(study = "asthma"){
   DT <- data.table(readcodes)
   PTD <- data.table(patid_CC)
 
+  ## summarise PATID
+  fullPTDcount <- PTD[, list(count = uniqueN(patid)), by=list(exp)]
+  
   ## merge Read records with PATID info 
   fullDT <- merge(DT, PTD, by = "patid")
   
@@ -109,7 +114,6 @@ summ_read_agesex <- function(study = "asthma"){
   ## Count number of Read codes by chapter, exposure
   fullreadcollapse <- fullfirsteventDT[, list(sum_read = .N), by=list(exp,readchapter)]
   ## merge in denominator
-  fullPTDcount <- PTD[, list(count = uniqueN(patid)), by=list(exp)]
   fullread <- merge(fullreadcollapse, fullPTDcount, by = c("exp"))
   fullread[,pc_read:=sum_read/count]
   fullread[,gender:="All"]
@@ -314,20 +318,18 @@ SummaryTable_age[duplicated(SummaryTable_age[,'Condition']), 'Condition'] <- ""
 SummaryTable_age
 tbl <- tableGrob(SummaryTable_age, rows=NULL, theme=tt)
 
-
-pdf(here::here("out/Fig2_table.pdf"), width = 10, height = 12)
+pdf(here::here("out/Fig2_table.pdf"), width = 10, height = 10)
 grid.arrange(plot2, tbl,
              nrow=2,
              as.table=TRUE,
-             heights=c(6,1))
+             heights=c(5,1))
 dev.off()
-pdf(here::here("out/Fig2_table_pc.pdf"), width = 10, height = 12)
+pdf(here::here("out/Fig2_table_pc.pdf"), width = 10, height = 10)
 grid.arrange(plot2_pc, tbl,
              nrow=2,
              as.table=TRUE,
-             heights=c(6,1))
+             heights=c(5,1))
 dev.off()
-
 
 # who is in both? ----------------------------------------------------------
 asthma_CC <- read_csv(file = here::here("datafiles",paste0("asthma", "_case_control_set.csv")))
@@ -402,25 +404,26 @@ tab1 <- DF_out_all %>%
   select(-gender, -age)
 
 names(tab1) <- new_names
-tab1 <- bind_rows(
-  slice(tab1, 1:2) %>%
+tab1_sd <- tab1 %>% 
+  filter(var %in% c("_FullCount", "age")) %>%
     mutate(
       Ecase = paste0(prettyNum(EcaseN, big.mark = ",", scientific = F), " (", signif(EcasePC,3),")"),
       Econt = paste0(prettyNum(EcontN, big.mark = ",", scientific = F), " (", signif(EcontPC,3),")"),
       Acase = paste0(prettyNum(AcaseN, big.mark = ",", scientific = F), " (", signif(AcasePC,3),")"),
       Acont = paste0(prettyNum(AcontN, big.mark = ",", scientific = F), " (", signif(AcontPC,3),")")
-    ),
-  slice(tab1, -(1:2)) %>%
+    )
+tab1_prop <- tab1 %>%
+  filter(!var %in% c("_FullCount","TOTAL","age")) %>%
     mutate(
       Ecase = paste0(prettyNum(EcaseN, big.mark = ",", scientific = F), " (", signif(EcasePC*100,3),")"),
       Econt = paste0(prettyNum(EcontN, big.mark = ",", scientific = F), " (", signif(EcontPC*100,3),")"),
       Acase = paste0(prettyNum(AcaseN, big.mark = ",", scientific = F), " (", signif(AcasePC*100,3),")"),
       Acont = paste0(prettyNum(AcontN, big.mark = ",", scientific = F), " (", signif(AcontPC*100,3),")")
     )  
-)
 
-tab1 <- tab1 %>% 
-  filter(var != "W") %>%
+tab1 <- tab1_sd %>% 
+  bind_rows(tab1_prop) %>%
+  filter(!var %in% c("W", "V")) %>%
   left_join(names, by = c("var")) %>%
   mutate_at("name", ~ifelse(is.na(.), var, .)) %>%
   select(-var, var = name)
@@ -446,35 +449,29 @@ blank_rows <- slice(tab1, 1:3) %>%
 
 tab1_out <- bind_rows(tab1, summ_full2, blank_rows) %>%
   select("var",  "Ecase", "Econt", "Acase", "Acont") %>%
-  mutate(order = c(1,5:10,12:13,15:33,2:4,11,14)) %>%
-  arrange(order) %>% select(-order)
+  mutate(order = c(1, ## total
+                   5:10, ## age groups
+                   16:21, ## first 6 chapters
+                   13, ## female
+                   22:27, ## next 6 chapters
+                   14, ## male
+                   28:34, ## last chapters
+                   11, ## NA age group
+                   2:4, ## both cohorts 
+                   12,15 ## NA rows
+                   )) %>%
+  arrange(order) %>% 
+  select(-order)
 
 write.csv(tab1_out, here::here("out/table1_v2.csv"))
 
 # Read chapter bar charts -------------------------------------------------
-asthma_out <- table1_asthma %>%
-  mutate(exposure = "Asthma")
-eczema_out <- table1_eczema %>%
-  mutate(exposure = "Eczema")
-DF_out <- bind_rows(
-  asthma_out,
-  eczema_out
-) %>%
-  pivot_wider(names_from = exposure, 
-              id_cols = var, 
-              values_from = c(control_n, control_pc, case_n, case_pc)) %>%
-  select(var, ends_with("Asthma"), ends_with("Eczema")) %>%
-  mutate_if(is.numeric, ~round(.,2)) %>%
-  mutate(asthma_dif = case_pc_Asthma-control_pc_Asthma,
-         eczema_dif = case_pc_Eczema-control_pc_Eczema)
-DF_out
-write_csv(DF_out, path = here::here("out", "table1.csv"))
-
-
-fig1 <- DF_out %>% 
-  filter(!var %in% c("Female", "Male", "n", "age")) %>%
-  slice(7:dim(DF_out)[1]) %>%
-  filter(!var %in% c("W", "V")) %>%
+figure_df <- DF_out_all %>%
+  filter(is.na(age),
+         !is.na(var),
+         !var %in% c("Female", "Male", "_FullCount", "age", "TOTAL"),
+         !grepl("[0-9]]", var)) 
+fig1 <- figure_df %>%
   select(var, control_n_Asthma, control_n_Eczema, 
          case_n_Asthma, case_n_Eczema) %>%
   pivot_longer(names_to = "cohort", cols = -var) %>%
@@ -482,9 +479,10 @@ fig1 <- DF_out %>%
 
 fig1 <- fig1 %>%
   left_join(names, by = "var") %>%
-  mutate_at(c("exp", "condition"), ~stringr::str_to_title(.))
+  mutate_at(c("exp", "condition"), ~stringr::str_to_title(.))%>%
+  filter(!is.na(name))
 
-ggplot(fig1, aes(x = name, y = value, colour = exp, fill = exp, group = exp)) +
+plot1_n_full <- ggplot(fig1, aes(x = reorder(name, -value), y = value, colour = exp, fill = exp, group = exp)) +
   geom_col(position = position_dodge(), alpha = 0.2) +
   facet_wrap(~condition) +
   labs(x = "Read Chapter", y = "No. of primary care records", colour = "Exposed", fill = "Exposed") +
@@ -493,14 +491,12 @@ ggplot(fig1, aes(x = name, y = value, colour = exp, fill = exp, group = exp)) +
   theme(legend.position = "top", 
         strip.background = element_blank(), 
         axis.text.x = element_text(hjust = 1, angle = 65))
+plot1_n_full
 dev.copy(pdf, here::here("out/Fig1.pdf"), width = 8, height = 5)
-dev.off()
+  dev.off()
 
 
-fig2 <- DF_out %>% 
-  filter(!var %in% c("Female", "Male", "n", "age")) %>%
-  slice(7:dim(DF_out)[1]) %>%
-  filter(!var %in% c("W", "V")) %>%
+fig2 <- figure_df %>%
   select(var, control_pc_Asthma, control_pc_Eczema, 
          case_pc_Asthma, case_pc_Eczema) %>%
   pivot_longer(names_to = "cohort", cols = -var) %>%
@@ -508,9 +504,10 @@ fig2 <- DF_out %>%
 
 fig2 <- fig2 %>%
   left_join(names, by = "var") %>%
-  mutate_at(c("exp", "condition"), ~stringr::str_to_title(.))
+  mutate_at(c("exp", "condition"), ~stringr::str_to_title(.)) %>%
+  filter(!is.na(name))
 
-ggplot(fig2, aes(x = name, y = value, colour = exp, fill = exp, group = exp)) +
+plot1_pc_full <- ggplot(fig2, aes(x = reorder(name, -value), y = value, colour = exp, fill = exp, group = exp)) +
   geom_col(position = position_dodge(), alpha = 0.2) +
   facet_wrap(~condition) +
   labs(x = "Read Chapter", y = "Percentage of all primary care records by Read chapter", colour = "Exposed", fill = "Exposed") +
@@ -519,6 +516,62 @@ ggplot(fig2, aes(x = name, y = value, colour = exp, fill = exp, group = exp)) +
   theme(legend.position = "top", 
         strip.background = element_blank(), 
         axis.text.x = element_text(hjust = 1, angle = 65))
-
+plot1_pc_full
 dev.copy(pdf, here::here("out/Fig1_pc.pdf"), width = 8, height = 5)
+dev.off()
+
+# Plot chart and table into one object
+SummaryTable <- DF_out_all %>%
+  filter(var == "_FullCount") %>%
+  select(!contains("pc")) %>%
+  select(!contains("dif")) %>% 
+  select(-gender, -age) %>%
+  pivot_longer(cols = -c(var)) %>%
+  tidyr::separate(name, into=paste("V",1:3,sep="_")) %>%
+  rename(exp = V_1, name = V_3) %>%
+  select(-V_2) %>%
+  mutate_at("value", ~prettyNum(., big.mark = ",", scientific = F)) %>%
+  pivot_wider(id_cols = c(var, name, exp), 
+              names_from = c(name),
+              values_from = value) %>%
+  mutate_at("var", ~"N") %>%
+  mutate_at("exp", ~str_to_title(.)) %>%
+  select(Variable = var, Exposed = exp,  everything()) 
+
+
+# Set theme to allow for plotmath expressions
+tt <- ttheme_minimal(core = list(fg_params = list(hjust = 0, 
+                                                  x = 0.1, 
+                                                  fontsize = 9)),
+                     colhead=list(fg_params = list(hjust = 0, 
+                                                   x = 0.1, 
+                                                   fontsize = 10, 
+                                                   fontface = "bold",
+                                                   parse=TRUE)))
+
+SummaryTable[duplicated(SummaryTable[, c('Variable')]), 
+                 c('Variable')] <- ""
+SummaryTable
+tbl <- tableGrob(SummaryTable, rows=NULL, theme=tt)
+
+pdf(here::here("out/Supp_barchart_full.pdf"), width = 6, height = 6)
+grid.arrange(plot1_n_full, tbl,
+             nrow=2,
+             as.table=TRUE,
+             heights=c(5,1))
+dev.off()
+
+lay <- rbind(
+  c(1,1,1,2,2,2),
+  c(1,1,1,2,2,2),
+  c(1,1,1,2,2,2),
+  c(1,1,1,2,2,2),
+  c(3,3,3,3,3,3)
+  )
+pdf(here::here("out/Supp_barchart_full_both.pdf"), width = 12, height = 6)
+grid.arrange(plot1_n_full,plot1_pc_full, tbl,
+             nrow=2,
+             as.table=TRUE,
+             #heights=c(5,1),
+             layout_matrix = lay)
 dev.off()
