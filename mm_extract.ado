@@ -14,26 +14,22 @@ DESCRIPTION OF FILE:	ado file to change directory
 *! version 1.0 \ kate mansfield 2015-07-22
 capture program drop mm_extract
 program define mm_extract	
-	* location of path file
-	local locationPathFile "J:\EHR-Working\Ali\2020_multimorbidity"
 	version 15
-	args dir
-	if "`dir'"=="work" {
-		cd "`pathWorking'"
+	
+	syntax, computer(string)
+
+	if "`computer'" == "mac"{
+		* location of path file
+		local locationPathFile "/Users/lsh1510922/Documents/Postdoc/2020_multimorbidity"
+		cd "`locationPathFile'"		
+		run "mm-paths-mac.do"
 	}
-	else if "`dir'"=="post" {
-		cd "`pathPosted'"
-	}
-	else if "`dir'"=="paths" {
-		cd "`locationPathFile'"
+	if "`computer'" == "windows"{
+		local locationPathFile "JC:\Users\lsh1510922\Documents\2020_multimorbidity"
+		cd "`locationPathFile'"		
 		run mm-paths.do
 	}
-	else if "`dir'"==""	{	//list current working directory
-		cd
-	}
-	else {
-		display as error "Working directory `dir' is unknown."
-	}
+
 end
 	
 
