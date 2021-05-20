@@ -147,7 +147,7 @@ tab N1
 
 preserve
 collapse (max)N1, by(caseid)
-nopeople caseid
+//nopeople caseid
 noi tab N1
 restore
 

@@ -6,13 +6,14 @@ mm_extract , computer(mac)
 
 global pathAnalysis "/Volumes/DATA/sec-file-b-volumea/EPH/EHR group/GPRD_GOLD/Ali/2020_multimorbidity/analysis"
 
+
 local S = "asthma"
 
 di  "`S'"
 	// `study'_patient_info.csv
 	use "${pathIn}/Patient_extract_mm_`S'_extract_matched_1.dta", clear
 	export delim "${pathAnalysis}/`S'_patient_info.csv", replace
-local S = "asthma"
+
 	// `study'_case_control_sets.csv
 	use "${pathOut}/expANDunexppool-main-multimorb-`S'-CCmatch_selected_matches.dta", clear
 	export delim "${pathAnalysis}/`S'_case_control_set.csv", replace

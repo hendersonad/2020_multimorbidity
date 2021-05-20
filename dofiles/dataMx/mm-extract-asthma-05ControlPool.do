@@ -175,12 +175,12 @@ label var eligibleEnd "earliest of: lcd, tod, deathdate, d(31dec2018)"
 #5. Only keep people contributing eligible person time during study period
 *******************************************************************************/
 drop if eligibleStart>=eligibleEnd //(14,723,556 observations deleted)
-unique patid // n=6977923
+unique patid // n= 4979907
 
 *Drop UNACCEPTABLE PATIENTS
-drop if accept==0 // (1,550,780 observations deleted)
+drop if accept==0 // (1,131,958 observations deleted)
 
-unique patid //  3847949
+unique patid // 3847949
 
 /*******************************************************************************
 #6. Flag control pool for MAIN analysis (and sensitivity analysis 2)
@@ -199,19 +199,16 @@ label var cp_main "eligible for main and sens2 control pool"
 tab cp_main, miss
 
 /*
-
-
   eligible |
    for main |
   and sens2 |
     control |
        pool |      Freq.     Percent        Cum.
 ------------+-----------------------------------
-          1 |  3,357,620       87.26       87.26
-          . |    490,329       12.74      100.00
+          1 |  3,330,231       86.55       86.55
+          . |    517,718       13.45      100.00
 ------------+-----------------------------------
       Total |  3,847,949      100.00
-
 
 */
 

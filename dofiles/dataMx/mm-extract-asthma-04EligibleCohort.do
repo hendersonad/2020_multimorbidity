@@ -104,7 +104,7 @@ assert accept==1
 * Add in eczema diagnosis dates (for sensitivity analysis including those
 * identified based on eczema diagosis code only)
 merge 1:1 patid using ${pathOut}\asthmaExposed, keep(match master) nogen keepusing(asthmadate) // 
-count // 2142854
+count //  2,146,815
 
 * add in index dates (i.e. first asthma diagnostic morbidity code) for Dx only asthma definition
 merge 1:1 patid using ${pathIn}/results_mm_extract_asthma, keepusing(indexdate) nogen
@@ -274,7 +274,7 @@ foreach cohort in multimorb {
 		save "${pathOut}/asthmaExposed-eligible-`cohort'", replace
 		
 	qui count 
-	di in red r(N) //549549
+	di in red r(N) // 517718
 	restore 
 
 } /*end foreach cohort in cancer mortality*/

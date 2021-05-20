@@ -53,12 +53,16 @@ version 15
 clear all
 macro drop _all
 
+
+global filename "mm-extract-asthma-07matchingCC"
+* open log file
+log using "${pathLogs}/${filename}", text replace
+
 /*******************************************************************************
 >> identify file locations and set any locals
 *******************************************************************************/
 * cd to location of file containing all file paths
-adopath + "J:\EHR-working\Ali\2020_multimorbidity"
-adopath + "J:\EHR share\ado"
+adopath + C:\Users\lsh1510922\Documents\2020_multimorbidity\programs
 
 mm_extract , computer(mac) 
 di "${pathIn}"
@@ -100,18 +104,19 @@ save "${pathOut}\expANDunexppool-main-multimorb-asthma-CCmatch.dta", replace
 
 tab case
 /*
+
       0=potential |
          control; |
         1=exposed |      Freq.     Percent        Cum.
 ------------------+-----------------------------------
-potential control |  3,847,839       88.70       88.70
-          exposed |    490,329       11.30      100.00
+potential control |  3,330,121       86.55       86.55
+          exposed |    517,718       13.45      100.00
 ------------------+-----------------------------------
-            Total |  4,338,168      100.00
+            Total |  3,847,839      100.00
 
 */
 
-/*
+
 prog_matching, dataset_path($pathOut\) /// 
 	dataset("expANDunexppool-main-multimorb-asthma-CCmatch") ///
 	match_sex(1) match_age(1) match_diffage(5) /// 
@@ -119,7 +124,13 @@ prog_matching, dataset_path($pathOut\) ///
 	control_minpriorreg(0) control_minfup(0) ///
 	nocontrols(5) nopractices(937) ///
 	study("asthma")
-*/
+/*
+Time started matching = 13:11:55
+Time ended matching = 15:40:39
+
+Number of cases with zero potential matches = 6
+
+
 
 prog_matching_asthma, dataset_path($pathOut\) /// 
 	dataset("expANDunexppool-main-multimorb-asthma-CCmatch") ///
@@ -128,15 +139,10 @@ prog_matching_asthma, dataset_path($pathOut\) ///
 	control_minpriorreg(0) control_minfup(0) ///
 	nocontrols(5) nopractices(937) ///
 	study("asthma")
-/*
-Time started matching = ??
-Time ended matching = 17:15:53
 
-Number of cases with zero potential matches = 175
 */
-	
-use "${pathOut}/expANDunexppool-main-multimorb-asthma-CCmatch_selected_matches", clear
-append using "${pathOut}/expANDunexppool-main-multimorb-asthma-CCmatch_selected_matches_asthma"
+
+use 			"${pathOut}/expANDunexppool-main-multimorb-asthma-CCmatch_selected_matches", clear
 bysort caseid:gen n1=_n
 bysort caseid:gen N1=_N
 tab N1
@@ -150,13 +156,14 @@ restore
 
    (max) N1 |      Freq.     Percent        Cum.
 ------------+-----------------------------------
-          1 |         31        0.01        0.01
-          2 |         29        0.01        0.01
-          3 |         29        0.01        0.02
-          4 |         42        0.01        0.03
-          5 |    489,692       99.97      100.00
+          1 |         13        0.00        0.00
+          2 |         20        0.00        0.01
+          3 |         22        0.00        0.01
+          4 |         33        0.01        0.02
+          5 |    517,624       99.98      100.00
 ------------+-----------------------------------
-      Total |    489,823      100.00
+      Total |    517,712      100.00
+
 */
 save "${pathOut}/expANDunexppool-main-multimorb-asthma-CCmatch_selected_matches_combined", replace
 //use "${pathOut}/expANDunexppool-main-multimorb-asthma-CCmatch_selected_matches_combined", clear
@@ -189,8 +196,8 @@ explicitely now
 
 cap log close
 
-rungprddlg_skinepi, define(0) extract(1) build(July 2020) directory(${MMpathIn}) ///
-	studyname(mm_asthma_extract_matched) memorytoassign(2g)
+rungprddlg, define(0) extract(1) build(July 2020) directory(${MMpathIn}) ///
+	studyname(mm_asthma_extract_matched) memorytoassign(3g)
 
 
 	

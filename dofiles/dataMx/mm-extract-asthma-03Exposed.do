@@ -92,7 +92,7 @@ order patid index
 * latest of Read code or second eczema therapy code
 gen asthmadate = indexdate
 format asthmadate %td
-label var asthmadate "latest of date of astma Dx"
+label var asthmadate "latest of date of asthma Dx"
 assert asthmadate!=. // OK
 
 
@@ -105,6 +105,10 @@ notes: ${filename} / TS
 sort patid 
 compress
 save "${pathOut}/asthmaExposed", replace
+
+
 unique patid // 2146815
+
+//use "${pathOut}/asthmaExposed_originalwrong", clear
 
 log close      

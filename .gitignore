@@ -16,3 +16,4 @@ datafiles/
 *.RData
 *.xlsx
 *.tif
+.Rhistory
