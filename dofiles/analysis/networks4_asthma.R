@@ -4,22 +4,34 @@ setwd('J:/EHR-Working/Amy/multimorbidity/data')
 ## Network Analysis AD multimorbidity with real data
 
 .libPaths('H:/R/Rlibs')
-library(tidyverse)
-library(survival)
-library(multcomp)
-library(ggplot2)
-library(visNetwork)
-library(lme4)
-library(lmerTest)
-library(cluster)
-library(factoextra)
-library(dendextend)
-library(here)
-library(igraph)
+pacman::p_load(tidyverse)
+pacman::p_load(survival)
+pacman::p_load(multcomp)
+pacman::p_load(ggplot2)
+pacman::p_load(visNetwork)
+pacman::p_load(lme4)
+pacman::p_load(lmerTest)
+pacman::p_load(cluster)
+pacman::p_load(factoextra)
+pacman::p_load(dendextend)
+pacman::p_load(here)
+pacman::p_load(igraph)
 
 
 # Load simplified data
-load(here("datafiles","simpdata_asthma.RData"))
+
+if(grepl("macd0015", Sys.info()["nodename"])){
+  datapath <- "/Volumes/DATA/sec-file-b-volumea/EPH/EHR group/GPRD_GOLD/Ali/2020_multimorbidity/analysis/"
+  load(file=paste0(datapath, "simpdata_asthma.RData"))
+  rch <- read_csv(here::here("codelists/read_chapters.csv"))
+  
+}else{
+  setwd("Z:/sec-file-b-volumea/EPH/EHR group/GPRD_GOLD/Ali/2020_multimorbidity/analysis")
+  datapath <- "Z:/sec-file-b-volumea/EPH/EHR group/GPRD_GOLD/Ali/2020_multimorbidity/analysis"
+  
+  load(here("datafiles","simpdata_asthma.RData"))
+}
+
 
 mipid <- 1028
 refde <- "2020-12-12"
@@ -49,12 +61,10 @@ dpw <- left_join(dpw[, c('pa', 'mu', 'ca', 'pr', 'can', 'tb', 'td', 'fua')], drw
 # Turn end of followup dates and dates of events into ages 
 for(c in grep('fi_', names(dpw))) dpw[,c] <- as.numeric( dpw[,c] - dpw$tb ) /365.25
 
+save(dpw, file=paste0(datapath,"datawide_asthma.RData"))
 
 
-save(dpw, file="datawide_asthma.RData")
-
-
-load(here("datafiles/datawide_asthma.RData"))
+load(paste0(datapath,"datawide_asthma.RData"))
 
 
 ###############################################################.
@@ -97,7 +107,8 @@ jac1 <- function(DW, E1, E2, Z=NULL){
   #print(mf)
   #m1b <- glm(as.formula(mf), data=DD, family=binomial())
   #m1c <- clogit(as.formula(paste(mf,"+ strata(can)")), data=DD)
-  m1r <- glmer(as.formula(paste(mf,"+ (1|pr)")), data=DD, nAGQ=0, family=binomial())
+  DT
+  m1r <- glmer(as.formula(paste(mf,"+ (1|pr)")), data=DT, nAGQ=0, family=binomial())
   #print(summary(m1r))
   K <- c("(Intercept) = 0","(Intercept) + caTRUE = 0",                       #controls in men age50, cases in men age50
          "(Intercept) + muTRUE = 0","(Intercept) + muTRUE + caTRUE = 0",     #controls in women age50, cases in women age50
@@ -150,7 +161,7 @@ for(e1 in ev[-length(ev)]){
   }
 }
 
-save(edj, file="edges2_jac1_asthma.RData")
+save(edj, file=paste0(datapath, "edges2_jac1_asthma.RData"))
 
 
 
@@ -160,7 +171,7 @@ save(edj, file="edges2_jac1_asthma.RData")
 ###
 
 
-load(here::here("datafiles", "edges2_jac1_asthma.RData"))
+#load(here::here("datafiles", "edges2_jac1_asthma.RData"))
 
 # Put probability of 2 events given one
 edj <- mutate(edj, 
@@ -180,7 +191,6 @@ for (i in c('m', 'w')) {
 abline(a=0, b=1)
 
 # Read chapter names and put them in edges data
-rch <- read_csv(here::here("out/data/read_chapters.csv"))
 edj <- mutate(edj, e1=paste(substring(f1,4,4),rch$content[match(substring(f1,4,4), rch$chapter)], sep="_"), 
               e2=paste(substring(f2,4,4), rch$content[match(substring(f2,4,4), rch$chapter)], sep="_"))
 
@@ -249,53 +259,53 @@ barplot(cbind(c()), beside=TRUE)
 ##
 ##  Clusters 
 ##
-
-pdf("dendrograms_asthma.pdf")
-for (k in c(50,18)) {
-  for (j in c('m', 'w')) {
-    for (i in 0:1){
-      md0 <- tapply(c(1-ddm[, paste0('r',j,i,'_',k)]), ddm[,c("e1","e2")], mean)
-      hc0 <- hclust(as.dist(t(md0)))
-      dhc0 <- as.dendrogram(hc0)
-      labels_cex(dhc0) <- 0.8
-      dhc0 <- color_branches(dhc0, h=0.5)
-      tit <- paste0('Age ', k, ', ', ifelse(j=='m','men', 'women'), ': ', 
-                    ifelse(i==0, 'matched controls', 'asthma'), ' (complete linkage)')
-      
-      par(mar=c(4,2,3,13))
-      plot(dhc0, ylab="", axes=F, horiz=T, xlab="Probability of one condition given the other", 
-           main=tit)
-      text(0,19.5,"Read code chapter:", pos=4, xpd=NA, cex=0.9, font=2)
-      axis(1,at=xp<-seq(0,1,0.1), labels=1-xp, las=1, cex=0.8)
-      abline(v=c(0.5, 0.7), lty=2)
-      
-    }
-  }
-}
-dev.off()
-
-pdf("dendrograms2_asthma.pdf")
-for (k in c(50,18)) {
-  for (j in c('m', 'w')) {
-    for (i in 0:1){
-      md0 <- tapply(c(1-ddm[, paste0('r',j,i,'_',k)]), ddm[,c("e1","e2")], mean)
-      hc0 <- hclust(as.dist(t(md0)), method = 'ward.D2')
-      dhc0 <- as.dendrogram(hc0)
-      labels_cex(dhc0) <- 0.8
-      dhc0 <- color_branches(dhc0, h=0.5)
-      tit <- paste0('Age ', k, ', ', ifelse(j=='m','men', 'women'), ': ', 
-                    ifelse(i==0, 'matched controls', 'asthma'), ' (Ward D2 linkage)')
-      
-      par(mar=c(4,2,3,13))
-      plot(dhc0, ylab="", axes=F, horiz=T, xlab="Probability of one condition given the other", 
-           main=tit)
-      text(0,19.5,"Read code chapter:", pos=4, xpd=NA, cex=0.9, font=2)
-      axis(1,at=xp<-seq(0,1,0.1), labels=1-xp, las=1)
-      abline(v=c(0.5, 0.7), lty=2)
-    }
-  }
-}
-dev.off()
+# 
+# pdf("dendrograms_asthma.pdf")
+# for (k in c(50,18)) {
+#   for (j in c('m', 'w')) {
+#     for (i in 0:1){
+#       md0 <- tapply(c(1-ddm[, paste0('r',j,i,'_',k)]), ddm[,c("e1","e2")], mean)
+#       hc0 <- hclust(as.dist(t(md0)))
+#       dhc0 <- as.dendrogram(hc0)
+#       labels_cex(dhc0) <- 0.8
+#       dhc0 <- color_branches(dhc0, h=0.5)
+#       tit <- paste0('Age ', k, ', ', ifelse(j=='m','men', 'women'), ': ', 
+#                     ifelse(i==0, 'matched controls', 'asthma'), ' (complete linkage)')
+#       
+#       par(mar=c(4,2,3,13))
+#       plot(dhc0, ylab="", axes=F, horiz=T, xlab="Probability of one condition given the other", 
+#            main=tit)
+#       text(0,19.5,"Read code chapter:", pos=4, xpd=NA, cex=0.9, font=2)
+#       axis(1,at=xp<-seq(0,1,0.1), labels=1-xp, las=1, cex=0.8)
+#       abline(v=c(0.5, 0.7), lty=2)
+#       
+#     }
+#   }
+# }
+# dev.off()
+# 
+# pdf("dendrograms2_asthma.pdf")
+# for (k in c(50,18)) {
+#   for (j in c('m', 'w')) {
+#     for (i in 0:1){
+#       md0 <- tapply(c(1-ddm[, paste0('r',j,i,'_',k)]), ddm[,c("e1","e2")], mean)
+#       hc0 <- hclust(as.dist(t(md0)), method = 'ward.D2')
+#       dhc0 <- as.dendrogram(hc0)
+#       labels_cex(dhc0) <- 0.8
+#       dhc0 <- color_branches(dhc0, h=0.5)
+#       tit <- paste0('Age ', k, ', ', ifelse(j=='m','men', 'women'), ': ', 
+#                     ifelse(i==0, 'matched controls', 'asthma'), ' (Ward D2 linkage)')
+#       
+#       par(mar=c(4,2,3,13))
+#       plot(dhc0, ylab="", axes=F, horiz=T, xlab="Probability of one condition given the other", 
+#            main=tit)
+#       text(0,19.5,"Read code chapter:", pos=4, xpd=NA, cex=0.9, font=2)
+#       axis(1,at=xp<-seq(0,1,0.1), labels=1-xp, las=1)
+#       abline(v=c(0.5, 0.7), lty=2)
+#     }
+#   }
+# }
+# dev.off()
 
 
 ###########################################.

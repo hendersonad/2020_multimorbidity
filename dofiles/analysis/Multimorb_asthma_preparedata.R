@@ -4,13 +4,28 @@
 # Begin 19 April 2021
 
 
-rm(list=ls())
-setwd("Z:/sec-file-b-volumea/EPH/EHR group/GPRD_GOLD/Ali/2020_multimorbidity/analysis")
-library('haven')
-dcc <- read.csv(file="asthma_case_control_set.csv", stringsAsFactors = F)
-dpi <- read.csv(file="asthma_patient_info.csv", stringsAsFactors = F)
-drc <- read_dta('asthma_read_chapter.dta') 
-# drc <- read.csv(file="asthma_read_chapter.csv", colClasses = c("integer", "character", "NULL", "character"))
+# packages ----------------------------------------------------------------
+pacman::p_load('haven')
+
+
+
+# load raw data -----------------------------------------------------------
+
+if(grepl("macd0015", Sys.info()["nodename"])){
+  datapath <- "/Volumes/DATA/sec-file-b-volumea/EPH/EHR group/GPRD_GOLD/Ali/2020_multimorbidity/analysis/"
+    dcc <- read.csv(file=paste0(datapath, "asthma_case_control_set.csv"), stringsAsFactors = F)
+    dpi <- read.csv(file=paste0(datapath, "asthma_patient_info.csv"), stringsAsFactors = F)
+    drc <- haven::read_dta(paste0(datapath,'asthma_read_chapter.dta')) 
+    # drc <- read.csv(file="asthma_read_chapter.csv", colClasses = c("integer", "character", "NULL", "character"))
+  
+}else{
+  setwd("Z:/sec-file-b-volumea/EPH/EHR group/GPRD_GOLD/Ali/2020_multimorbidity/analysis")
+  datapath <- "Z:/sec-file-b-volumea/EPH/EHR group/GPRD_GOLD/Ali/2020_multimorbidity/analysis"
+  dcc <- read.csv(file="asthma_case_control_set.csv", stringsAsFactors = F)
+  dpi <- read.csv(file="asthma_patient_info.csv", stringsAsFactors = F)
+  drc <- haven::read_dta('asthma_read_chapter.dta') 
+  # drc <- read.csv(file="asthma_read_chapter.csv", colClasses = c("integer", "character", "NULL", "character"))
+}
 
 
 
@@ -60,6 +75,6 @@ drd$ed <- as.numeric(as.Date("2020-12-12") - as.Date(drd$ed, "%d%b%Y"))/365.25
 
 
 ## Save simplified data
-save(dpd, dcd, drd, file="simpdata_asthma.RData")
+save(dpd, dcd, drd, file=paste0(datapath,"simpdata_asthma.RData"))
 
 
