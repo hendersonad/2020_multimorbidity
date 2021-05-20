@@ -10,14 +10,14 @@ DESCRIPTION OF FILE:	Global macros for file paths
 *=========================================================================*/
 * all files except data
 *global pathWorking 	"C:\postdoc\eczema_extract"
-global pathPosted "J:\EHR-Working\Ali\2020_multimorbidity"
+global pathPosted "C:\Users\lsh1510922\Documents\2020_multimorbidity\"
 
 /*******************************************************************************
 # DO FILES
 *******************************************************************************/
 * posted dofiles
-global pathPostDofiles	 	"J:\EHR-Working\Ali\2020_multimorbidity\dofiles"
-global pathPrograms			"J:\EHR-Working\Ali\2020_multimorbidity\programs"
+global pathPostDofiles	 	"C:\Users\lsh1510922\Documents\2020_multimorbidity\dofiles\"
+global pathPrograms			"C:\Users\lsh1510922\Documents\2020_multimorbidity\program\"
 
 /*******************************************************************************
 # DATASETS
