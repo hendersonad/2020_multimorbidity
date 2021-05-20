@@ -36,7 +36,7 @@ log using "${pathLogs}/${filename}", text replace
 /*******************************************************************************
 >> choose study type
 *******************************************************************************/
-local study = "eczema"
+local study = "asthma"
 
 cd ${pathIn}
 
@@ -52,15 +52,17 @@ cd ../
 filelist, dir(.) pattern("*.dta")
 keep if regexm(filename, "mm_`study'_extract_matched")
 list filename
-
+drop if regexm(filename, "^._")
 drop if regexm(filename, "Additional")
 drop if regexm(filename, "Patient_")
 drop if regexm(filename, "Practice_")
 drop if regexm(filename, "results_mm_`study'_extract_matched")
 save "${pathPostDofiles}\dataMx\myFileList.dta", replace
 
+use "${pathPostDofiles}\dataMx\myFileList.dta", clear
 local obs = _N
 di `obs'
+l filename
 forvalues i = 1/`obs' {
 	di "`i' of `obs'"
 	use "${pathPostDofiles}\dataMx\myFileList.dta" in `i' , clear	
