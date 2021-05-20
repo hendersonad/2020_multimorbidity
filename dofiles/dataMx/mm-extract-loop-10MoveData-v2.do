@@ -4,7 +4,7 @@ adopath + C:/Users/lsh1510922/Documents/2020_multimorbidity
 mm_extract paths
 global pathAnalysis "Z:\GPRD_GOLD\Ali\2020_multimorbidity\analysis"
 
-local S = "eczema"
+local S = "asthma"
 
 di  "`S'"
 	// `study'_patient_info.csv
@@ -18,3 +18,4 @@ di  "`S'"
 	// `study'_read_chapter.csv
 	use "${pathIn}/`S'_READ.dta", clear
 	export delim "${pathAnalysis}/`S'_read_chapter.csv", replace
+

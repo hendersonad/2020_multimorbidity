@@ -179,7 +179,7 @@ assert happy18th!=.		// no missing values
 	local startdate = mdy(1,1,2016)
 	local enddate = mdy(12,31,2018)
 	
-gen eligibleStart = max(crd + 365.25, uts, happy18th, `startdate') //ALI - date will ened changing
+gen eligibleStart = max(crd + 365.25, uts, happy18th, `startdate') 
 format eligibleStart %td 
 label var eligibleStart "latest of: crd+365.25, uts, happy18th, `startdate'"
 
