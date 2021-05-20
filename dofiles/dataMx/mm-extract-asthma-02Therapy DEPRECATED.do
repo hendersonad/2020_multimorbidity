@@ -52,7 +52,7 @@ clear all
 capture log close
 
 * find path file location and run it
-mm_extract paths
+mm_extract , computer(mac) 
 
 * create a filename global that can be used throughout the file
 global filename "ecz-extract-02eczemaTherapy"

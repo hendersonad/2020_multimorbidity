@@ -60,8 +60,8 @@ macro drop _all
 adopath + "J:\EHR-working\Ali\2020_multimorbidity"
 adopath + "J:\EHR share\ado"
 
-mm_extract paths
-
+mm_extract , computer(mac) 
+di "${pathIn}"
 run "dofiles\Kate_matching\prog_matching.do"
 
 /*

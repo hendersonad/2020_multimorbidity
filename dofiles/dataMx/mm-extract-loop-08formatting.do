@@ -24,8 +24,8 @@ clear all
 capture log close
 adopath + C:\Users\lsh1510922\Documents\2020_multimorbidity
 * find path file location and run it
-mm_extract paths
-
+mm_extract , computer(mac) 
+di "${pathIn}"
 * create a filename global that can be used throughout the file
 global filename "mm-extract-eczema-07readchapter"
 
