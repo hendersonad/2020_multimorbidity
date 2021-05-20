@@ -60,8 +60,8 @@ clear all
 capture log close
 
 * find path file location and run it
-mm_extract paths
-
+mm_extract , computer(mac) 
+di "${pathIn}"
 * create a filename global that can be used throughout the file
 global filename "exca-extract01v2-asthma"
 
@@ -89,12 +89,12 @@ rungprddlg, define(1) extract(0) build(July 2017) ///
 
 
 rungprddlg_skinepi, define(1) extract(0) build(July 2020) ///
-	directory(Z:\GPRD_GOLD\Ali\2020_multimorbidity\in) ///
+	directory(${pathIn}) ///
 	studyname(mm_extract_asthma) memorytoassign(8g) ///
 	ssta(01jan1900) send(01jan2100) gend(Male & Female) ///
 	minagetype(No restriction) maxagetype(No restriction) ///
 	priorregtype(No restriction) fuptype(No restriction) ///
-	inc1filename(J:\EHR-Working\Ali\2020_multimorbidity\codelists\definite_asthma_codes) ///
+	inc1filename("${pathCodelists}/definite_asthma_codes") ///
 	inc1codevar(medcode) inc1R1(1) inc1R2(0) inc1searchclin(1) ///
 	inc1searchtest(1) inc1searchimm(1) inc1searchref(1) inc1inreg(0) ///
 	inc1crittype(Any in study period) inc1addsecond(0)
@@ -244,10 +244,7 @@ rungprddlg, define(0) extract(1) build(July 2020) directory(${pathIn}) ///
 
 rungprddlg_skinepi, define(0) extract(1) build(July 2020) directory(${pathIn}) ///
 	studyname(mm_extract_asthma) memorytoassign(4g)
-rungprddlg_skinepi, define(0) extract(1) build(July 2020) directory(${pathIn}) ///
-	studyname(mm_extract_eczema) memorytoassign(4g)
-
-
+	
 
 
 

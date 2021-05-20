@@ -55,7 +55,8 @@ clear all
 capture log close
 
 * find path file location and run it
-mm_extract paths
+mm_extract, computer(mac) 
+di "${pathIn}"
 
 * create a filename global that can be used throughout the file
 global filename "mm-extract-asthma-03Exposed"
@@ -64,11 +65,10 @@ global filename "mm-extract-asthma-03Exposed"
 log using "${pathLogs}/${filename}", text replace
 
 
-
 /*******************************************************************************
 #2. Identify people with an asthma morbidity code Dx (Read or ICD-10)
 *******************************************************************************/
-* first identify the date of first eczema diagnosis
+* first identify the date of first asthma diagnosis
 use "$pathIn/results_mm_extract_asthma", clear
 
 
@@ -106,9 +106,9 @@ sort patid
 compress
 save "${pathOut}/asthmaExposed", replace
 
+
 unique patid // 2146815
 
 //use "${pathOut}/asthmaExposed_originalwrong", clear
-
 
 log close      

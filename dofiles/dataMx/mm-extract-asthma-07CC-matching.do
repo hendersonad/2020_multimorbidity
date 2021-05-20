@@ -64,9 +64,9 @@ log using "${pathLogs}/${filename}", text replace
 * cd to location of file containing all file paths
 adopath + C:\Users\lsh1510922\Documents\2020_multimorbidity\programs
 
-mm_extract paths
-
-run "programs\prog_matching.do"
+mm_extract , computer(mac) 
+di "${pathIn}"
+run "dofiles\Kate_matching\prog_matching.do"
 
 /*
 syntax, dataset_path(string) dataset(string) ///

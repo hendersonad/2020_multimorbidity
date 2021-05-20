@@ -9,28 +9,28 @@ DESCRIPTION OF FILE:	Global macros for file paths
 
 *=========================================================================*/
 * all files except data
-*global pathWorking 	"C:\postdoc\eczema_extract"
-global pathPosted "J:\EHR-Working\Ali\2020_multimorbidity"
+*global pathWorking 	"C:/postdoc/eczema_extract"
+global pathPosted "/Users/lsh1510922/Documents/Postdoc/2020_multimorbidity/"
 
 /*******************************************************************************
 # DO FILES
 *******************************************************************************/
 * posted dofiles
-global pathPostDofiles	 	"J:\EHR-Working\Ali\2020_multimorbidity\dofiles"
-global pathPrograms			"J:\EHR-Working\Ali\2020_multimorbidity\programs"
+global pathPostDofiles	 	"/Users/lsh1510922/Documents/Postdoc/2020_multimorbidity/dofiles"
+global pathPrograms			"/Users/lsh1510922/Documents/Postdoc/2020_multimorbidity/programs"
 
 /*******************************************************************************
 # DATASETS
 *******************************************************************************/
-global pathOut			"Z:\GPRD_GOLD\Ali\2020_multimorbidity\out"				// derived data saved on J:drive
-global pathIn			"Z:\GPRD_GOLD\Ali\2020_eczema_extract\in"
-global MMpathIn			"Z:\GPRD_GOLD\Ali\2020_multimorbidity\in"
-global pathCodelists 	"J:\EHR-Working\Ali\2020_multimorbidity\codelists" // code lists
-global pathLookUps 		"J:\EHR Share\3 Database guidelines and info\GPRD_Gold\Look up files\Lookups_2020_07"
-global pathBrowsers		"J:\EHR Share\3 Database guidelines and info\GPRD_Gold\Medical & Product Browsers\2020_07_Browsers"
-global pathDenom		"J:\EHR Share\3 Database guidelines and info\GPRD_Gold\Denominator files\JUL2020"
-global pathLinkageEligibility "J:\EHR Share\3 Database guidelines and info\CPRD Linkage Source Data Files\Version19\set_19_Source_GOLD"
-global pathCPRDflatfiles "Z:\GPRD_GOLD\Harriet\JUL2020\Data\STATA_files"
+global pathOut			"/Volumes/DATA/sec-file-b-volumea/EPH/EHR group/GPRD_GOLD/Ali/2020_multimorbidity/out"				// derived data saved on J:drive
+global pathIn			"/Volumes/DATA/sec-file-b-volumea/EPH/EHR group/GPRD_GOLD/Ali/2020_multimorbidity/in"
+global MMpathIn			"/Volumes/DATA/sec-file-b-volumea/EPH/EHR group/GPRD_GOLD/Ali/2020_multimorbidity/in"
+global pathCodelists 	"/Users/lsh1510922/Documents/Postdoc/2020_multimorbidity/codelists" // code lists
+global pathLookUps 		"/Volumes/EPHSHARE2/shared/shared/EHR Share/3 Database guidelines and info/GPRD_Gold/Look up files/Lookups_2020_07"
+global pathBrowsers		"/Volumes/EPHSHARE2/shared/shared/EHR Share/3 Database guidelines and info/GPRD_Gold/Medical & Product Browsers/2020_07_Browsers"
+global pathDenom		"/Volumes/EPHSHARE2/shared/shared/EHR Share/3 Database guidelines and info/GPRD_Gold/Denominator files/JUL2020"
+global pathLinkageEligibility "/Volumes/EPHSHARE2/shared/shared/EHR Share/3 Database guidelines and info/CPRD Linkage Source Data Files/Version19/set_19_Source_GOLD"
+global pathCPRDflatfiles "/Volumes/DATA/sec-file-b-volumea/EPH/EHR group/GPRD_GOLD/Harriet/JUL2020/Data/STATA_files"
 
 *global pathHES
 *global pathONS
@@ -39,18 +39,11 @@ global pathCPRDflatfiles "Z:\GPRD_GOLD\Harriet\JUL2020\Data\STATA_files"
 # OUTPUT
 *******************************************************************************/
 * log files
-global pathLogs "J:\EHR-Working\Ali\2020_multimorbidity\output\logs"
+global pathLogs "/Users/lsh1510922/Documents/Postdoc/2020_multimorbidity/output/logs"
 
 * results text files
-global pathResults "J:\EHR-Working\Ali\2020_multimorbidity\output\results"
+global pathResults "/Users/lsh1510922/Documents/Postdoc/2020_multimorbidity/output/results"
 
-
-
-
-/******************************************************************************* 
-# CPRD linkded data files
-*******************************************************************************/
-global pathLinked "Z:\GPRD_GOLD\Ali\2020_eczema_extract\linked\17_108request3"
 
 
 * all linked datasets
@@ -61,13 +54,6 @@ global fileHESdxEpi "${pathLinked}/hes_diagnosis_epi_17_108_request3"
 global fileHESepi "${pathLinked}/hes_episodes_17_108_request3"
 global fileHESpx "${pathLinked}/hes_patient_17_108_request3"
 global fileHESopcs "${pathLinked}/hes_procedures_epi_17_108_request3"
-
-
-
-
-
-
-
 
 
 

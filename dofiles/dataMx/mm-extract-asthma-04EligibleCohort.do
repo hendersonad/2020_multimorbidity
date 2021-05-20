@@ -66,7 +66,7 @@ clear all
 capture log close
 
 * find path file location and run it
-mm_extract paths
+mm_extract , computer(mac) 
 
 * create a filename global that can be used throughout the file
 global filename "mm-extract-asthma-04EligibleCohort"
@@ -85,8 +85,8 @@ log using "${pathLogs}/${filename}", text replace
 	eczema algorithm (and also for those with eczema Dx code only for sens analysis)
 *******************************************************************************/
 * identify individuals with an eczema diagnosis at any time
-use $pathIn/Patient_extract_mm_extract_asthma_1, clear
-unique patid // n = 2146815
+use "${pathIn}/Patient_extract_mm_extract_asthma_1", clear
+unique patid // n = 2142854
 
 * merge in practice information
 gen pracid=mod(patid, 1000)
