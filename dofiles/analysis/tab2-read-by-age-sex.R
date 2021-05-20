@@ -9,10 +9,40 @@ library(here)
 library(grid)
 library(gridExtra)
 
+datapath <- "/Volumes/DATA/sec-file-b-volumea/EPH/EHR group/GPRD_GOLD/Ali/2020_multimorbidity/analysis/"
+
+theme_ali <- theme_bw() %+replace%
+  theme(legend.position = "top",
+        strip.background = element_blank(), 
+        panel.grid.major.y = element_blank(),
+        panel.grid.minor.y = element_blank(),
+        axis.text.y = element_text(hjust = 1, angle = 0),
+        axis.text.x = element_text(hjust = 1, angle = 65))
+
+theme_ali_noFlip <- theme_bw() %+replace%
+  theme(legend.position = "top",
+        strip.background = element_blank(), 
+        panel.grid.major.y = element_blank(),
+        panel.grid.minor.y = element_blank(),
+        axis.text.y = element_text(hjust = 0, angle = 0),
+        axis.text.x = element_text(angle=65, hjust = 0.5))
+        
+theme_set(theme_ali)
+
+
 names <- read_csv(here("codelists/chapter_names.csv"))
+if(grepl("macd0015", Sys.info()["nodename"])){
+  asthma_CC <- read_csv(file = paste0(datapath, "asthma", "_case_control_set.csv"))
+  eczema_CC <- read_csv(file = paste0(datapath, "eczema", "_case_control_set.csv"))
+}else{
+  asthma_CC <- read_csv(file = here::here("datafiles",paste0("asthma", "_case_control_set.csv")))
+  eczema_CC <- read_csv(file = here::here("datafiles",paste0("eczema", "_case_control_set.csv")))
+}
+
+
 
 ## Slightly bodgy way of finding max and min event date
-#readcodes <- haven::read_dta(here::here("datafiles", paste0(asthma,"_read_chapter.dta")))
+#readcodes <- haven::read_dta(here::here("datafiles", paste0("asthma","_read_chapter.dta")))
 ## date range of events
 min(readcodes$eventdate, na.rm = T)
 max(readcodes$eventdate, na.rm = T)
@@ -25,14 +55,13 @@ readcodes$eventdate[readcodes$eventdate >= as.Date("2020-07-01") & !is.na(readco
 min(readcodes$eventdate, na.rm = T)
 max(readcodes$eventdate, na.rm = T)
 
-datapath <- "/Volumes/DATA/sec-file-b-volumea/EPH/EHR group/GPRD_GOLD/Ali/2020_multimorbidity/analysis/"
-
 # read summary by age/sex -------------------------------------------------
 summ_read_agesex <- function(study = "asthma"){
   if(grepl("macd0015", Sys.info()["nodename"])){
     study_info <- read_csv(file = paste0(datapath, study, "_patient_info.csv"))
     case_control <- read_csv(file = paste0(datapath, study, "_case_control_set.csv"))
     readcodes <- haven::read_dta(paste0(datapath, study, "_read_chapter.dta"))
+    
   }else{
     study_info <- read_csv(file = here::here("datafiles",paste0(study, "_patient_info.csv")))
     case_control <- read_csv(file = here::here("datafiles",paste0(study, "_case_control_set.csv")))  
@@ -253,11 +282,8 @@ plot2 <- ggplot(fig1, aes(x = reorder(name, -value), y = value, colour = exp, fi
             scales = "fixed") +
   labs(x = "Read Chapter", y = "No. of primary care records", colour = "Exposed", fill = "Exposed") +
   coord_flip() +
-  theme_bw() +
-  theme(legend.position = "top",
-        strip.background = element_blank(), 
-        axis.text.y = element_text(hjust = 1, angle = 0),
-        axis.text.x = element_text(hjust = 1, angle = 65))
+  scale_fill_manual(values = c("Control" = "tomato", "Case" = "darkblue")) +
+  scale_colour_manual(values = c("Control" = "tomato", "Case" = "darkblue")) 
 plot2
 dev.copy(pdf, here::here("out/Fig2.pdf"), width = 10, height = 11)
   dev.off()
@@ -277,12 +303,9 @@ plot2_pc <- ggplot(fig2, aes(x = reorder(name, -value), y = value*100, colour = 
   facet_grid(cols = vars(gender, age),
              rows = vars(condition)) +
   labs(x = "Read Chapter", y = "Percentage of all primary care records by Read chapter", colour = "Exposed", fill = "Exposed") +
-  coord_flip() +
-  theme_bw() +
-  theme(legend.position = "top",
-        strip.background = element_blank(), 
-        axis.text.y = element_text(hjust = 1, angle = 0),
-        axis.text.x = element_text(hjust = 1, angle = 65))
+  scale_fill_manual(values = c("Control" = "tomato", "Case" = "darkblue")) +
+  scale_colour_manual(values = c("Control" = "tomato", "Case" = "darkblue")) +
+  coord_flip() 
 plot2_pc
 dev.copy(pdf, here::here("out/Fig2_pc.pdf"), width = 10, height = 11)
   dev.off()
@@ -340,7 +363,6 @@ grid.arrange(plot2_pc, tbl,
 dev.off()
 
 # who is in both? ----------------------------------------------------------
-asthma_CC <- read_csv(file = here::here("datafiles",paste0("asthma", "_case_control_set.csv")))
 asthma_cases <- asthma_CC %>%
   select(caseid) %>% 
   distinct() %>%
@@ -350,7 +372,6 @@ asthma_conts <- asthma_CC %>%
   distinct() %>%
   mutate(cohort = "asthma")
 
-eczema_CC <- read_csv(file = here::here("datafiles",paste0("eczema", "_case_control_set.csv")))
 eczema_cases <- eczema_CC %>%
   select(caseid) %>% 
   distinct() %>%
@@ -474,6 +495,9 @@ tab1_out <- bind_rows(tab1, summ_full2, blank_rows) %>%
 write.csv(tab1_out, here::here("out/table1_v2.csv"))
 
 # Read chapter bar charts -------------------------------------------------
+
+theme_set(theme_ali_noFlip)
+
 figure_df <- DF_out_all %>%
   filter(is.na(age),
          !is.na(var),
@@ -495,14 +519,11 @@ plot1_n_full <- ggplot(fig1, aes(x = reorder(name, -value), y = value, colour = 
   facet_wrap(~condition) +
   labs(x = "Read Chapter", y = "No. of primary care records", colour = "Exposed", fill = "Exposed") +
   coord_flip() +
-  theme_bw() +
-  theme(legend.position = "top", 
-        strip.background = element_blank(), 
-        axis.text.x = element_text(hjust = 1, angle = 65))
+  scale_fill_manual(values = c("Control" = "tomato", "Case" = "darkblue")) +
+  scale_colour_manual(values = c("Control" = "tomato", "Case" = "darkblue")) 
 plot1_n_full
 dev.copy(pdf, here::here("out/Fig1.pdf"), width = 8, height = 5)
   dev.off()
-
 
 fig2 <- figure_df %>%
   select(var, control_pc_Asthma, control_pc_Eczema, 
@@ -520,13 +541,12 @@ plot1_pc_full <- ggplot(fig2, aes(x = reorder(name, -value), y = value, colour =
   facet_wrap(~condition) +
   labs(x = "Read Chapter", y = "Percentage of all primary care records by Read chapter", colour = "Exposed", fill = "Exposed") +
   coord_flip() +
-  theme_bw() +
-  theme(legend.position = "top", 
-        strip.background = element_blank(), 
-        axis.text.x = element_text(hjust = 1, angle = 65))
+  scale_fill_manual(values = c("Control" = "tomato", "Case" = "darkblue")) +
+  scale_colour_manual(values = c("Control" = "tomato", "Case" = "darkblue")) 
+
 plot1_pc_full
 dev.copy(pdf, here::here("out/Fig1_pc.pdf"), width = 8, height = 5)
-dev.off()
+  dev.off()
 
 # Plot chart and table into one object
 SummaryTable <- DF_out_all %>%
