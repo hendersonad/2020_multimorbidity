@@ -32,13 +32,14 @@ global filename "mm-extract-eczema-07readchapter"
 * open log file
 log using "${pathLogs}/${filename}", text replace
 
+* ssc install filelist
 
 /*******************************************************************************
 >> choose study type
 *******************************************************************************/
-local study = "eczema"
+local study = "asthma"
 
-cd ${pathIn}
+cd "${pathIn}"
 
 cap mkdir `study'Cohort_readchapters
 // clear everything in this directory 
