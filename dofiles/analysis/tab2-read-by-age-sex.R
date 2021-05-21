@@ -16,16 +16,18 @@ theme_ali <- theme_bw() %+replace%
         strip.background = element_blank(), 
         panel.grid.major.y = element_blank(),
         panel.grid.minor.y = element_blank(),
+        panel.grid.minor.x = element_blank(),
         axis.text.y = element_text(hjust = 1, angle = 0),
-        axis.text.x = element_text(hjust = 1, angle = 65))
+        axis.text.x = element_text(hjust = 1, angle = 0))
 
 theme_ali_noFlip <- theme_bw() %+replace%
   theme(legend.position = "top",
         strip.background = element_blank(), 
         panel.grid.major.y = element_blank(),
         panel.grid.minor.y = element_blank(),
+        panel.grid.minor.x = element_blank(),
         axis.text.y = element_text(hjust = 0, angle = 0),
-        axis.text.x = element_text(angle=65, hjust = 0.5))
+        axis.text.x = element_text(angle=0, hjust = 0.5))
         
 theme_set(theme_ali)
 
@@ -457,8 +459,12 @@ tab1 <- tab1_sd %>%
   mutate_at("name", ~ifelse(is.na(.), var, .)) %>%
   select(-var, var = name)
 
-names(summ_full_case) <- c("var", "AcaseN", "AcasePC", "EcaseN", "EcasePC")
-names(summ_full_cont) <- c("var", "AcontN", "AcontPC", "EcontN", "EcontPC")
+summ_full_case <- summ_full_case %>%
+  rename(AcaseN = asthma_n, AcasePC = asthma_pc, 
+         EcaseN = eczema_n, EcasePC = eczema_pc)
+summ_full_cont <- summ_full_cont %>%
+  rename(AcontN = asthma_n, AcontPC = asthma_pc, 
+         EcontN = eczema_n, EcontPC = eczema_pc)
 summ_full2 <- summ_full_case %>%
   bind_cols(select(summ_full_cont, -var)) %>%
   mutate(arrange = c("both", "one", "one")) %>%
@@ -590,11 +596,13 @@ grid.arrange(plot1_n_full, tbl,
 dev.off()
 
 lay <- rbind(
-  c(1,1,1,2,2,2),
-  c(1,1,1,2,2,2),
-  c(1,1,1,2,2,2),
-  c(1,1,1,2,2,2),
-  c(3,3,3,3,3,3)
+  c(1,1,1),
+  c(1,1,1),
+  c(1,1,1),
+  c(2,2,2),
+  c(2,2,2),
+  c(2,2,2),
+  c(3,3,3)
   )
 pdf(here::here("out/Supp_barchart_full_both.pdf"), width = 12, height = 6)
 grid.arrange(plot1_n_full,plot1_pc_full, tbl,
