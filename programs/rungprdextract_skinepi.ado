@@ -61,8 +61,7 @@ local timestart=c(current_time)
 
 noi dib "Extracting from `practot' practices:", stars
 
-//local files Additional Clinical Consultation Immunisation Patient Referral Test Therapy 
-local files Test 
+local files Additional Clinical Consultation Immunisation Patient Referral Test Therapy 
 
 foreach file of local files {
 	noi dib "`file'"
@@ -87,8 +86,7 @@ local time_finishExt_`file' = c(current_time)
 noi dib "Appending practices:", stars
 
 
-//local files Additional Clinical Consultation Immunisation Patient Referral Test Therapy 
-local files  Clinical Consultation Immunisation Patient Referral Test 
+local files Additional Clinical Consultation Immunisation Patient Referral Test Therapy 
 foreach file of local files {
 noi dib "`file'"
 
@@ -132,8 +130,7 @@ local time_finishAppend_`file' = c(current_time)
 *Erase by-practice files
 
 noi dib "Appended practice files created; erasing individual extract practice files:", stars
-//local files Additional Clinical Consultation Patient Referral Test Therapy Immunisation 
-local files  Clinical Consultation Immunisation Patient Referral Test 
+local files Additional Clinical Consultation Patient Referral Test Therapy Immunisation 
 foreach file of local files {
 noi dib "`file'"
 forvalues i=1/`practot'  {

@@ -329,7 +329,7 @@ SummaryTable_age <- DF_out_all %>%
               values_from = value) %>%
   arrange(name, var, exp) %>%
   mutate_at("var", ~str_remove(., "_")) %>%
-  mutate_at("var", ~ifelse(.=="Count", "No. patients", "All records")) %>%
+  mutate_at("var", ~ifelse(.=="AgeCount", "No. patients", "All records")) %>%
   mutate_at("exp", ~str_to_title(.)) %>%
   #mutate_at(vars("name", "var") , ~ifelse(duplicated(.),"",.)) %>%
   select(Condition = name, Variable = var,Exposed = exp,  everything()) 
@@ -604,7 +604,7 @@ lay <- rbind(
   c(2,2,2),
   c(3,3,3)
   )
-pdf(here::here("out/Supp_barchart_full_both.pdf"), width = 12, height = 6)
+pdf(here::here("out/Supp_barchart_full_both.pdf"), width = 8, height = 8)
 grid.arrange(plot1_n_full,plot1_pc_full, tbl,
              nrow=2,
              as.table=TRUE,

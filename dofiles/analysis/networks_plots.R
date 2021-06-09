@@ -1,5 +1,5 @@
 ## networks plotting 
-install.packages("pacman")
+#install.packages("pacman")
 pacman::p_load(igraph)
 pacman::p_load(dendextend)
 pacman::p_load(readr)

@@ -24,7 +24,6 @@ if(grepl("macd0015", Sys.info()["nodename"])){
   datapath <- "/Volumes/DATA/sec-file-b-volumea/EPH/EHR group/GPRD_GOLD/Ali/2020_multimorbidity/analysis/"
   load(file=paste0(datapath, "simpdata_asthma.RData"))
   rch <- read_csv(here::here("codelists/read_chapters.csv"))
-  
 }else{
   setwd("Z:/sec-file-b-volumea/EPH/EHR group/GPRD_GOLD/Ali/2020_multimorbidity/analysis")
   datapath <- "Z:/sec-file-b-volumea/EPH/EHR group/GPRD_GOLD/Ali/2020_multimorbidity/analysis"
@@ -107,8 +106,7 @@ jac1 <- function(DW, E1, E2, Z=NULL){
   #print(mf)
   #m1b <- glm(as.formula(mf), data=DD, family=binomial())
   #m1c <- clogit(as.formula(paste(mf,"+ strata(can)")), data=DD)
-  DT
-  m1r <- glmer(as.formula(paste(mf,"+ (1|pr)")), data=DT, nAGQ=0, family=binomial())
+  m1r <- glmer(as.formula(paste(mf,"+ (1|pr)")), data=DD, nAGQ=0, family=binomial())
   #print(summary(m1r))
   K <- c("(Intercept) = 0","(Intercept) + caTRUE = 0",                       #controls in men age50, cases in men age50
          "(Intercept) + muTRUE = 0","(Intercept) + muTRUE + caTRUE = 0",     #controls in women age50, cases in women age50
@@ -164,12 +162,12 @@ for(e1 in ev[-length(ev)]){
 save(edj, file=paste0(datapath, "edges2_jac1_asthma.RData"))
 
 
-
 ###########################################.
 ###
 ###  Hierarchical cluster analysis
 ###
 
+rch <- read_csv(here::here("codelists/read_chapters.csv"))
 
 #load(here::here("datafiles", "edges2_jac1_asthma.RData"))
 

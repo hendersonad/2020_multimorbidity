@@ -76,21 +76,17 @@ log using "${pathLogs}/${filename}", text replace
 
 
 
-
-
-
-
 /*******************************************************************************
 #1. Prepare patient- and practice-level date data for those meeting the 
 	eczema algorithm (and also for those with eczema Dx code only for sens analysis)
 *******************************************************************************/
 * identify individuals with an eczema diagnosis at any time
 use "${pathIn}/Patient_extract_mm_extract_asthma_1", clear
-unique patid // n = 2142854
+unique patid // n =  2146815
 
 * merge in practice information
 gen pracid=mod(patid, 1000)
-merge m:1 pracid using  $pathIn/Practice_extract_mm_extract_asthma_1, nogen //all 130,703 matched
+merge m:1 pracid using  "$pathIn/Practice_extract_mm_extract_asthma_1", nogen //all 130,703 matched
 
 label var lcd "date of last data collection from practice"
 label var uts "date practice reached CPRD quality control standards"
@@ -103,11 +99,11 @@ assert accept==1
 
 * Add in eczema diagnosis dates (for sensitivity analysis including those
 * identified based on eczema diagosis code only)
-merge 1:1 patid using ${pathOut}\asthmaExposed, keep(match master) nogen keepusing(asthmadate) // 
+merge 1:1 patid using "${pathOut}/asthmaExposed", keep(match master) nogen keepusing(asthmadate) // 
 count //  2,146,815
 
 * add in index dates (i.e. first asthma diagnostic morbidity code) for Dx only asthma definition
-merge 1:1 patid using ${pathIn}/results_mm_extract_asthma, keepusing(indexdate) nogen
+merge 1:1 patid using "${pathIn}/results_mm_extract_asthma", keepusing(indexdate) nogen
 rename indexdate asthmadateDx
 label var asthmadateDx "date of first diagnostic eczema code"
 
@@ -156,7 +152,7 @@ assert happy18th!=.
 * from: eligible from latest of:
 	local startdate = mdy(1,1,2016)
 	local enddate = mdy(12,31,2018)
-	
+cap drop eligibleStart	
 gen eligibleStart = max(crd + 365.25, uts, happy18th, `startdate') 
 format eligibleStart %td 
 label var eligibleStart "latest of: crd+365.25, uts, happy18th, `startdate'"
@@ -175,7 +171,7 @@ Earliest of:
 	3. death date
 	4. end of study (31dec2018)
 */
-
+cap drop eligibleEnd
 gen eligibleEnd=min(lcd, tod, deathdate, `enddate')
 format eligibleEnd %d
 label var eligibleEnd "earliest of: lcd, tod, deathdate, `enddate'"
@@ -184,12 +180,13 @@ summ(eligibleEnd)
 summ(eligibleStart)
 
 count if eligibleEnd < `startdate'
-
+cap drop exclude*
 gen exclude1 = happy18th > `startdate' 
 gen exclude2 = crd + 365.25 >  `startdate'
 gen exclude3 = eligibleEnd < eligibleStart
-gen exclude4 = asthmadate > eligibleEnd
+gen exclude4 = asthmadate > eligibleStart
 gen exclude = max(exclude1,exclude2,exclude3,exclude4)
+tab exclude4
 
 /*******************************************************************************
 #5. Identify individuals with an asthma diagnosis (based on full algorithm)

@@ -83,7 +83,7 @@ if "`dontwarn'"==""{
 		*******************************************************
 		*ERROR CHECKING FOR DEFINE, AND SET UP CODELISTS AS SINGLE VAR FILES WITH STANDARD VARNAMES
 		*******************************************************
-		cap cd z:
+		cap cd "/Volumes/DATA/sec-file-b-volumea/EPH/EHR group/"
 		if _rc==170{
 		noi di in red "Cannot access the Z:\ drive - are you logged into it?"
 		exit _rc
@@ -91,6 +91,7 @@ if "`dontwarn'"==""{
 		
 		*Check directory exists and if not (for define only) offer to create it 
 		cap cd "`directory'"
+		cd "${pathIn}"
 		if _rc==170 & `define'==1{
 		noi di in green "The directory you specified does not exist: create it? Enter y to confirm, anything else to quit" _request(keyentry)
 		if "$keyentry"!="y" error 1
@@ -270,7 +271,7 @@ if "`dontwarn'"==""{
 		
 		global gprdbuild = upper(substr("`build'", 1, 3)) + substr("`build'", strpos("`build'"," ")+1, 4) 
 		*Note the above just turns e.g. January 2012 into JAN2012
-		global path_STATA "Z:\GPRD_GOLD\Harriet/$gprdbuild\Data\STATA_files"
+		global path_STATA "/Volumes/DATA/sec-file-b-volumea/EPH/EHR group/GPRD_GOLD/Harriet/$gprdbuild/Data/STATA_files"
 				
 		global gprdfiles `directory'
 		global studyname `studyname'
