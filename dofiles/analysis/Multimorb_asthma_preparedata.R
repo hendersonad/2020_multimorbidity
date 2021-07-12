@@ -12,8 +12,8 @@ pacman::p_load('haven')
 # load raw data -----------------------------------------------------------
 
 if(grepl("macd0015", Sys.info()["nodename"])){
-  datapath <- "/Volumes/DATA/sec-file-b-volumea/EPH/EHR group/GPRD_GOLD/Ali/2020_multimorbidity/analysis/"
-    dcc <- read.csv(file=paste0(datapath, "asthma_case_control_set.csv"), stringsAsFactors = F)
+  datapath <- "/Volumes/EHR group/GPRD_GOLD/Ali/2020_multimorbidity/analysis/"
+  dcc <- read.csv(file=paste0(datapath, "asthma_case_control_set.csv"), stringsAsFactors = F)
     dpi <- read.csv(file=paste0(datapath, "asthma_patient_info.csv"), stringsAsFactors = F)
     drc <- haven::read_dta(paste0(datapath,'asthma_read_chapter.dta')) 
     # drc <- read.csv(file="asthma_read_chapter.csv", colClasses = c("integer", "character", "NULL", "character"))

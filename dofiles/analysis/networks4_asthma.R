@@ -21,7 +21,7 @@ pacman::p_load(igraph)
 # Load simplified data
 
 if(grepl("macd0015", Sys.info()["nodename"])){
-  datapath <- "/Volumes/DATA/sec-file-b-volumea/EPH/EHR group/GPRD_GOLD/Ali/2020_multimorbidity/analysis/"
+  datapath <- "/Volumes/EHR group/GPRD_GOLD/Ali/2020_multimorbidity/analysis/"
   load(file=paste0(datapath, "simpdata_asthma.RData"))
   rch <- read_csv(here::here("codelists/read_chapters.csv"))
 }else{
@@ -50,7 +50,7 @@ dpw$td <- dpw$td*10*365.25+as.Date("1900-01-01")
 dpw$td[is.na(dpw$td)] <- as.Date("2020-06-30")
 dpw$fua <- as.numeric((dpw$td - dpw$tb)/365.25)
 
-# Add first last time of event
+# Add first time of event
 drw <- group_by(drd, pa, rc) %>% summarise(fi=min(ed)) %>% pivot_wider(id_cols=pa, names_from=rc, values_from=c(fi)) %>% ungroup()
 names(drw)[-1] <- paste0('fi_', names(drw)[-1])
 

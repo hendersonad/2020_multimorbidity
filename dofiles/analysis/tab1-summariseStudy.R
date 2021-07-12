@@ -9,25 +9,36 @@ library(grid)
 library(gridExtra)
 library(dataReporter) # https://github.com/ekstroem/dataReporter
 
-names <- read_csv(here("datafiles/chapter_names.csv"))
-readcodes <- haven::read_dta(here::here("datafiles", paste0(study,"_read_chapter.dta")))
+names <- read_csv(here("codelists/chapter_names.csv"))
+#readcodes <- haven::read_dta(here::here("datafiles", paste0(study,"_read_chapter.dta")))
+
+study = "asthma"
+
+if(grepl("macd0015", Sys.info()["nodename"])){
+  datapath <- "/Volumes/EHR group/GPRD_GOLD/Ali/2020_multimorbidity/analysis/"
+  study_info <- read_csv(file = paste0(datapath, study, "_patient_info.csv"))
+  case_control <- read_csv(file = paste0(datapath, study, "_case_control_set.csv"))
+  readcodes <- haven::read_dta(paste0(datapath,study,'_read_chapter.dta')) 
+}else{
+  setwd("Z:/sec-file-b-volumea/EPH/EHR group/GPRD_GOLD/Ali/2020_multimorbidity/analysis")
+  datapath <- "Z:/sec-file-b-volumea/EPH/EHR group/GPRD_GOLD/Ali/2020_multimorbidity/analysis"
+  readcodes <- haven::read_dta(paste0(datapath,study,'_asthma_read_chapter.dta')) 
+}
 
 get_table1 <- function(study = "asthma"){
-  study_info <- read_csv(file = here::here("datafiles",paste0(study, "_patient_info.csv")))
-  case_control <- read_csv(file = here::here("datafiles",paste0(study, "_case_control_set.csv")))
   cases <- case_control %>%
-    select(caseid) %>% 
+    dplyr::select(caseid) %>% 
     distinct() %>%
     mutate(exposed = 1)
   controls <- case_control %>%
-    select(contid) %>% 
+    dplyr::select(contid) %>% 
     distinct() %>%
     mutate(exposed = 0)
   patid_CC  <- study_info %>%
-    select(patid, gender, realyob) %>%
+    dplyr::select(patid, gender, realyob) %>%
     left_join(cases, by = c("patid" = "caseid")) %>%
     mutate(exp = replace_na(exposed, 0)) %>%
-    select(-exposed) %>%
+    dplyr::select(-exposed) %>%
     left_join(controls, by =c("patid" = "contid", "exp" = "exposed")) %>%
     mutate_at(c("exp", "gender"), ~as.factor(.))
   
@@ -36,7 +47,7 @@ get_table1 <- function(study = "asthma"){
     summarise(n = n()) %>%
     pivot_wider(names_from = exp, values_from = n) %>%
     mutate(var = "n", control_pc = NA, case_pc = NA) %>%
-    select(var, control_n = `0`, control_pc, case_n = `1`, case_pc)
+    dplyr::select(var, control_n = `0`, control_pc, case_n = `1`, case_pc)
   age_summ <- patid_CC %>%
     mutate(age = 2015-realyob) %>%
     group_by(exp) %>%
@@ -44,7 +55,7 @@ get_table1 <- function(study = "asthma"){
     ungroup() %>%
     pivot_wider(names_from = exp, values_from = c(med, sd)) %>%
     mutate(var = "age") %>%
-    select(var, control_n = med_0, control_pc = sd_0, case_n = med_1, case_pc = sd_1)
+    dplyr::select(var, control_n = med_0, control_pc = sd_0, case_n = med_1, case_pc = sd_1)
   age_summ
   agecut_summ <- patid_CC %>%
     mutate(age = 2018-realyob,
@@ -56,7 +67,7 @@ get_table1 <- function(study = "asthma"){
     rename(control_n = `0`, case_n = `1`) %>%
     mutate(control_pc = control_n / sum(control_n),
            case_pc = case_n / sum(case_n)) %>%
-    select(var = agecut, control_n, control_pc , case_n , case_pc )
+    dplyr::select(var = agecut, control_n, control_pc , case_n , case_pc )
   agecut_summ
   
   (t1 <- table(patid_CC$gender, patid_CC$exp))
@@ -68,7 +79,7 @@ get_table1 <- function(study = "asthma"){
   sex_summ_df <- sex_summ_df %>%
     mutate(var = c("n","n","pc","pc")) %>%
     pivot_wider(id_cols = gender, names_from = var, values_from = c(case, control)) %>%
-    select(var = gender, control_n , control_pc, case_n , case_pc)
+    dplyr::select(var = gender, control_n , control_pc, case_n , case_pc)
   
   out1 <- bind_rows(
     n_summ,
@@ -96,7 +107,7 @@ get_table1 <- function(study = "asthma"){
   DF$case_pc <- signif(prop.table(DF$case), digits = 2)
   
   DF_out <- DF %>%
-    select(var = readchapter, control_n = control, control_pc, case_n = case, case_pc)
+    dplyr::select(var = readchapter, control_n = control, control_pc, case_n = case, case_pc)
   DF_out <- bind_rows(
     out1, 
     DF_out
