@@ -18,7 +18,7 @@ pacman::p_load(wesanderson)
 source(here("programs/bespoke_colour_branches.R")) 
 colgrid <- rgb(0.4,0.4,0.4,0.1)
 # load data  --------------------------------------------------------------
-datapath <- "/Volumes/DATA/sec-file-b-volumea/EPH/EHR group/GPRD_GOLD/Ali/2020_multimorbidity/analysis/"
+datapath <- "/Volumes/EHR group/GPRD_GOLD/Ali/2020_multimorbidity/analysis/"
 
 if(grepl("macd0015", Sys.info()["nodename"])){
   load(paste0(datapath,"edges2_jac1_asthma.RData"))
@@ -88,7 +88,7 @@ format_edges <- function(data_in){
 # Dendrogram plot ---------------------------------------------------------
 
 #par(mar=c(4,2,3,13))
-dendo_plot <- function(data_in, k = 50, j = "m", i = 0, shortnames = FALSE){
+dendo_plot <- function(data_in, k = 50, j = "m", i = 0, shortnames = FALSE, cluster_method = "complete"){
   edj2 <- format_edges(data_in)
   
   ## create dissimilarity matrix
@@ -97,7 +97,7 @@ dendo_plot <- function(data_in, k = 50, j = "m", i = 0, shortnames = FALSE){
   ddm <- rbind(edj2[,c("e1","e2", "rm0_50","rm1_50", "rw0_50","rw1_50", "rm0_18","rm1_18", "rw0_18","rw1_18")],ddm)
 
   md0 <- tapply(c(1-ddm[, paste0('r',j,i,'_',k)]), ddm[,c("e1","e2")], mean)
-  hc0 <- hclust(as.dist(t(md0)))
+  hc0 <- hclust(as.dist(t(md0)), method = cluster_method)
   dhc0 <- as.dendrogram(hc0)
   labels_cex(dhc0) <- 1.4
 
@@ -137,7 +137,7 @@ dendo_plot <- function(data_in, k = 50, j = "m", i = 0, shortnames = FALSE){
   
   dhc0 %>%
     hang.dendrogram(hang = 0.1) %>% 
-    plot(ylab="", axes=F, horiz=T, xlab="",main="")  
+    plot(ylab="", axes=F, horiz=T, xlab="",main="", edge.root=F)  
     
     if(shortnames == FALSE){mtext(side = 1, "Probability of one condition given the other", cex=1.3, font=1, padj=3, adj =0)}
   axis(1,at=xp<-seq(0,1,0.1), labels=1-xp, las=1, cex=0.8)
@@ -344,6 +344,13 @@ par(mfcol = c(4,4))
   plot_all_dendo(ii = 0, cc = "eczema",5)
   plot_all_dendo(ii = 1, cc = "asthma",10)
   plot_all_dendo(ii = 0, cc = "asthma",14)
+dev.off()
+pdf(here::here("out/fig5_dendo_all_Ward.pdf"), 14, 14)
+par(mfcol = c(4,4))
+  plot_all_dendo(ii = 1, cc = "eczema", cluster_method = "ward.D")
+  plot_all_dendo(ii = 0, cc = "eczema",5, cluster_method = "ward.D")
+  plot_all_dendo(ii = 1, cc = "asthma",10, cluster_method = "ward.D")
+  plot_all_dendo(ii = 0, cc = "asthma",14, cluster_method = "ward.D")
 dev.off()
 
 # pdf(here::here("out/fig2_eczema.pdf"), 13, 13)
