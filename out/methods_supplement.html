@@ -168,33 +168,57 @@ pre code {
 
 <div id="supplementary-note-1.-methods" class="section level2">
 <h2>Supplementary Note 1. Methods</h2>
-<p>We performed four analysis steps to move from individual level data on Read chapters to a dissimilarity matrix which was used to derive the networks and hierarchical dendrograms presented in this study. Here we describe these steps in more details:</p>
+<p>We performed three analysis steps to move from individual level data on Read chapters to a dissimilarity matrix which was used to derive the networks and hierarchical dendrograms presented in this study. Here we describe these steps in more details:</p>
 <ol style="list-style-type: decimal">
 <li><p>Linear mixed-effects logistic regression to estimate association between two Read chapters</p></li>
-<li><p>General linear hypothesis to derive probabilities at specified covariate values</p></li>
-<li><p>Conversion to Jaccard distance</p></li>
-<li><p>Hierarchical cluster analysis using complete-linkage agglomeration method</p></li>
+<li><p>General linear hypothesis to derive Jaccard distance at specified covariate values</p></li>
+<li><p>Hierarchical cluster analysis and undirected network analysis</p></li>
 </ol>
 <div id="linear-mixed-effects-logistic-regression" class="section level3">
 <h3>Linear mixed-effects logistic regression</h3>
-<p>We used mixed-effects logistic regression to estimate the probability of recording an event in both Read chapters for all combinations of the 19 chapters included in this study (hence 171 regression models). For each regression let <span class="math inline">\(y_{iq}=1\)</span> when an individal patient <span class="math inline">\(i\)</span> from practice <span class="math inline">\(q\)</span> records events in both Read chapters being modelled. Then the regression for each pair of Read chapters in matrix notation is as follows:</p>
+<p>We used a generalised linear mixed model (GLMM) to estimate the probability of recording an event in both Read chapters for all combinations of the 19 chapters included in this study (hence 171 regression models). For each regression let <span class="math inline">\(y_{iq}=1\)</span> when an individal patient <span class="math inline">\(i\)</span> from practice <span class="math inline">\(q\)</span> records events in both Read chapters being modelled. Then the regression for each pair of Read chapters in matrix notation is as follows:</p>
 <span class="math display">\[\begin{equation}
 \boldsymbol{y} = \boldsymbol{X\beta} + \boldsymbol{Zu} + \boldsymbol{\epsilon} 
 \end{equation}\]</span>
 <p>Where <span class="math inline">\(\boldsymbol{y}\)</span> is an <span class="math inline">\(N\times1\)</span> vector of binary outcomes where <span class="math inline">\(N\)</span> is the total number of individuals in the model and <span class="math inline">\(y = 1\)</span> if there are records from both chapters and <span class="math inline">\(y = 0\)</span> if there is only a record from one chapter (Patients with no record from either chapter were removed for each regression). Then <span class="math inline">\(\boldsymbol{X}\)</span> is an <span class="math inline">\(N\times 3\)</span> matrix of the fixed effect predictor variables; exposure status (0 = unexposed, 1 = exposed), age at matching date (centred on age 50), and duration of follow up following the first event (centred on 5 years of follow up). The vector <span class="math inline">\(\boldsymbol{\beta}\)</span> is then then the vector of fixed-effects regression coefficients. <span class="math inline">\(\boldsymbol{Z}\)</span> is the <span class="math inline">\(N \times q\)</span> design matrix for the <span class="math inline">\(q\)</span> random effects corresponding to the unique GP practices contributing patients to the corresponding regression. The vector <span class="math inline">\(\boldsymbol{u}\)</span> then captures the random effect and <span class="math inline">\(\boldsymbol{\epsilon}\)</span> is an <span class="math inline">\(N \times 1\)</span> colum vector of the residuals.</p>
 <p>Since patients without a record in either Read chapter under study could not contribute to the likelihood, the size of each regression was different, with varying numbers of individual patients <span class="math inline">\(N\)</span> and practices <span class="math inline">\(q\)</span>. We used the <code>glmer</code> function from the <code>lme4</code> package in R:</p>
-<pre class="r"><code>mf &lt;- paste(&quot;y ~ ca + age50 + exy5 &quot;)
+<pre class="r"><code>mf &lt;- paste(&quot;y ~ ca + age50 + exy5 + mu&quot;)
 m1r &lt;- glmer(as.formula(paste(mf,&quot;+ (1|pr)&quot;)), data=DD, nAGQ=0, family=binomial())</code></pre>
+<p>Where <code>y</code> is the outcome for patient <span class="math inline">\(i\)</span> in practice <span class="math inline">\(q\)</span>, and <code>pr</code> is the practice identifier for <span class="math inline">\(q\)</span>. The fixed effects are estimated for the variables <span class="math inline">\(ca\)</span>, a binary indicator for exposure status; <code>age50</code>, age at study entry centred on 50; <code>exy5</code>, follow up after the first event centred on 5 years; and <code>mu</code>, sex of the participant. We ran the model using a logit link function and set the integer scale (<code>nAGQ</code>) to zero. This improved performance of the model and reduced computational burden but provides a less exact form of parameter estimation for GLMMs by optimising the random effects and the fixed-effects coefficients in the penalized iteratively reweighted least squares step.</p>
 </div>
 <div id="general-linear-hypothesis" class="section level3">
 <h3>General linear hypothesis</h3>
 <p>To convert our regression output into probabilities we used a general linear hypothesis at relevant parameters values for the fixed effects in our model. We assumed that age and sex would play an important role in the probability of multimorbidity, as well as exposure status. Therefore we derived separate probabilities at pre-specified ages and for both sexes included in this study, and both exposure status (giving <span class="math inline">\(2 \times 2 \times 2=8\)</span> networks for eczema and asthma).</p>
-<p>To derive the probability</p>
-<span class="math display">\[\begin{align}
-test another &amp;= a5132451 \\ 
-asfa &amp;= a \\  
-number3 &amp;= as 
-\end{align}\]</span>
+<p>To extract the probability of a record from both Read chapters in teh model, we used the <code>glht</code> function from the <code>multcomp</code> package in <code>R</code>. The linear hypothesis we tested for each of the eight evaluations was as follows:</p>
+<pre class="r"><code>  K &lt;- c(&quot;(Intercept) = 0&quot;,
+         &quot;(Intercept) + caTRUE = 0&quot;,
+         &quot;(Intercept) + muTRUE = 0&quot;,
+         &quot;(Intercept) + muTRUE + caTRUE = 0&quot;,
+         &quot;(Intercept) - 32*age50 = 0&quot;,
+         &quot;(Intercept) - 32*age50 + caTRUE = 0&quot;,
+         &quot;(Intercept) + muTRUE - 32*age50 = 0&quot;,
+         &quot;(Intercept) + muTRUE - 32*age50 + caTRUE = 0&quot;)</code></pre>
+<p>This evaluated the probability of records in both Read chapters in the model for the following respecively:</p>
+<ul>
+<li>Unexposed men at age 50 <code>(Intercept) = 0</code></li>
+<li>Exposed men at age 50 <code>(Intercept) + caTRUE = 0</code></li>
+<li>Unexposed women at age 50 <code>(Intercept) + muTRUE = 0</code></li>
+<li>Exposed women at age 50 <code>(Intercept) + muTRUE + caTRUE = 0</code></li>
+<li>Unexposed men at age 18 <code>(Intercept) - 32*age50 = 0</code></li>
+<li>Exposed men at age 18 <code>(Intercept) - 32*age50 + caTRUE = 0</code></li>
+<li>Unexposed women at age 18 <code>(Intercept) + muTRUE - 32*age50 = 0</code></li>
+<li>Exposed women at age 18 <code>(Intercept) + muTRUE - 32*age50 + caTRUE = 0</code></li>
+</ul>
+<p>This function will return the prediction on a logit scale for the probability <span class="math inline">\(p\)</span> of a record from both Read chapters in the model at the corresponding fixed effects values. To convert this estimate (call it <span class="math inline">\(x = log\left(\frac{p}{1-p}\right)\)</span>) to a probability we take: <span class="math display">\[ p = \exp\left(\frac{x}{1+x}\right)\]</span> These steps results in an estimated probability for a record from two Read chapters for each of the 171 combinations of chapters and the 8 estimated linear hypothesis. We then converted this into a dissimilarity matrix for the hierarchical cluster analysis.</p>
+<p>One important note, since the variable <code>exy5</code> is not included in these linear hypotheses, the fixed effect of follow up was controlled for at a centred value of 5 years. In other words, these hypotheses test for the probability that a man/woman, exposed/unexposed, 18/50 year-old, would record a Read code in the other chapter within 5 years of a record in the first (for each pair of studied Read chapters).</p>
+</div>
+<div id="hierarchical-cluster-analysis-and-undirected-network-analysis" class="section level3">
+<h3>Hierarchical cluster analysis and undirected network analysis</h3>
+<p>We constructed a dissimilarity matrix (<span class="math inline">\(8 \times 190\)</span>) for the probability of multiple records from each combination of two Read cahpters. There were 8 for combinations of the two specified ages (18 and 50 years-old), sexes (male and female) and exposure statuses (exposed and unexposed). There were 190 rows in the matrix for the 171 possible discordant combinations plus the 19 chapters themselves.</p>
+<p>This dissimialirty matrix was then analysed using the <code>hclust</code> function from the <code>stats</code> package using the complete linkage clustering method. This performs a hierarchical cluster analysis on a set of dissimilarities for the 19 Read chapters being clustered at each of the 8 combinations of explanatory variable values.</p>
+<p>In short, each object is assigned to its own cluster and then the algorithm proceeds iteratively, at each stage joining the two most similar clusters, continuing until there is just a single cluster. At each step the two clusters seperated by the &quot;shortest distance&quot; are combined, in our example this is the shortest Jaccard distance (or highest probability of a record from both Read chapters in pairs). The method is an agglomerative scheme that erases rows and columns in the matrix as old clusters are merged into new ones.</p>
+<p>The <code>hclust</code> generates a hierarchical tree produced by the clustering process. This tree is then used to plot the dendrograms in this study.</p>
+<p>The undirected network graphs were constructed using the <code>graph_from_data_frame</code> function from the <code>igraph</code> package where the node size is determined by the number of recorded events in each specific Read chapter for each combination of age, sex and exposure in our analysis. The edges are determined by the conditional probability of a record in one chapter given a record in another, from the GLMM analysis above.</p>
 </div>
 </div>
 

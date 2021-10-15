@@ -12,7 +12,7 @@ We performed three analysis steps to move from individual level data on Read cha
 
 2. General linear hypothesis to derive Jaccard distance at specified covariate values
 
-3. Hierarchical cluster analysis using complete-linkage agglomeration method
+3. Hierarchical cluster analysis and undirected network analysis
 
 ### Linear mixed-effects logistic regression 
 We used a generalised linear mixed model (GLMM) to estimate the probability of recording an event in both Read chapters for all combinations of the 19 chapters included in this study (hence 171 regression models). For each regression let $y_{iq}=1$ when an individal patient $i$ from practice $q$ records events in both Read chapters being modelled. Then the regression for each pair of Read chapters in matrix notation is as follows:
@@ -55,11 +55,19 @@ This evaluated the probability of records in both Read chapters in the model for
 * Unexposed women at age 18 `(Intercept) + muTRUE - 32*age50 = 0`
 * Exposed women at age 18 `(Intercept) + muTRUE - 32*age50 + caTRUE = 0`
 
-Since the variable `exy5` was not included in these linear hypotheses, the fixed effect of follow up was controlled for at a centred value of 5 years. In other words,these hypotheses test for the probability that a man/woman, exposed/unexposed, 18/50 year-old would record a Read code in the other chapter within 5 years of a record in the first (for each pair of studied Read chapters).
+This function will return the prediction on a logit scale for the probability $p$ of a record from both Read chapters in the model at the corresponding fixed effects values. To convert this estimate (call it $x = log\left(\frac{p}{1-p}\right)$) to a probability we take:
+$$ p = \exp\left(\frac{x}{1+x}\right)$$
+These steps results in an estimated probability for a record from two Read chapters for each of the 171 combinations of chapters and the 8 estimated linear hypothesis. We then converted this into a dissimilarity matrix for the hierarchical cluster analysis. 
 
-### Conversion to Jaccard distance
-The above steps created an $N \times 19$ matrix of probabilities of multiple records between two Read chapters for each of the $N$ participants in our eczema and asthma cohort respectively. To convert these into a dissimilarity matrix to facilitate the hierarchical cluster analysis, we converted these probabilities into a Jaccard distance: 
+One important note, since the variable `exy5` is not included in these linear hypotheses, the fixed effect of follow up was controlled for at a centred value of 5 years. In other words, these hypotheses test for the probability that a man/woman, exposed/unexposed, 18/50 year-old, would record a Read code in the other chapter within 5 years of a record in the first (for each pair of studied Read chapters).
 
-\beign{equation}
+### Hierarchical cluster analysis and undirected network analysis
+We constructed a dissimilarity matrix ($8 \times 190$) for the probability of multiple records from each combination of two Read cahpters. There were 8 for combinations of the two specified ages (18 and 50 years-old), sexes (male and female) and exposure statuses (exposed and unexposed). There were 190 rows in the matrix for the 171 possible discordant combinations plus the 19 chapters themselves.
 
-\end{equation}
+This dissimialirty matrix was then analysed using the `hclust` function from the `stats` package using the complete linkage clustering method. This performs a hierarchical cluster analysis on a set of dissimilarities for the 19 Read chapters being clustered at each of the 8 combinations of explanatory variable values. 
+
+In short, each object is assigned to its own cluster and then the algorithm proceeds iteratively, at each stage joining the two most similar clusters, continuing until there is just a single cluster. At each step the two clusters seperated by the "shortest distance" are combined, in our example this is the shortest Jaccard distance (or highest probability of a record from both Read chapters in pairs). The method is an agglomerative scheme that erases rows and columns in the matrix as old clusters are merged into new ones.
+
+The `hclust` generates a hierarchical tree produced by the clustering process. This tree is then used to plot the dendrograms in this study. 
+
+The undirected network graphs were constructed using the `graph_from_data_frame` function from the `igraph` package where the node size is determined by the number of recorded events in each specific Read chapter for each combination of age, sex and exposure in our analysis. The edges are determined by the conditional probability of a record in one chapter given a record in another, from the GLMM analysis above. 
