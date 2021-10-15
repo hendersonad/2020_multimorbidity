@@ -10,6 +10,7 @@ datafiles/
 .Rproj.user
 *.pptx
 *.pdf
+!out/methods_supplement.pdf
 *.png
 *.docx
 *.afdesign
