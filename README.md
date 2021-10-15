@@ -1,5 +1,7 @@
 # Novel clusters of multimorbidity in people with asthma and atopic eczema: a UK population-based study
 
+[![DOI](https://zenodo.org/badge/327689240.svg)](https://zenodo.org/badge/latestdoi/327689240)
+
 A project comparing primary care records in people with and without common allergic conditions: eczema and asthma. 
 
 For more information please visit [this website](https://a-henderson91.github.io/MICAC/)
