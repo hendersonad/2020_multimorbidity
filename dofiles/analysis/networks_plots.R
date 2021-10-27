@@ -102,23 +102,12 @@ dendo_plot <- function(data_in, k = 50, j = "m", i = 0, shortnames = FALSE, clus
   labels_cex(dhc0) <- 1.4
 
   if(i==0){
-    #ali_colours <- function(n){viridis(n, alpha = 1, begin = 0.2, end = 0.8, option = "inferno")}
-    #ali_colours <- function(n){scico(n, palette = "lajolla",alpha = 1, begin = 0.3, end = 0.7)}
     ali_colours <- function(n){colorRampPalette(RColorBrewer::brewer.pal("RdYlBu", n = 8))(n)}
-    #RdYlBu <- c("#74ADD1" ,"#ABD9E9" ,"#E0F3F8" ,"#FEE090" ,"#FDAE61","#F46D43")
-    #ali_colours <- function(n){colorRampPalette(RdYlBu)(n)}
-    #ali_colours <- function(n){colorRampPalette(wesanderson::wes_palette("Zissou1", 5, type = "discrete"))(n)}
     line_col <- wesanderson::wes_palette("Zissou1", 1, type = "discrete")
     line_col <- "tomato"
     dhc0 <- ali_branch(dhc0, h=0.7, col=ali_colours, groupLabels = T)
   }else{
-    #ali_colours <- function(n){viridis(n, alpha = 1, begin = 0.2, end = 0.8, option = "mako")}
-    #ali_colours <- function(n){scico(n, palette = "lapaz",alpha = 1, begin = 0.3, end = 0.7)}
-    #PiYG <- c("#DE77AE", "#F1B6DA", "#FDE0EF" ,"#E6F5D0", "#B8E186" ,"#7FBC41")
-    #ali_colours <- function(n){colorRampPalette(PiYG)(n)}
     ali_colours <- function(n){colorRampPalette(rev(RColorBrewer::brewer.pal("RdYlBu", n = 8)))(n)}
-    #ali_colours <- function(n){colorRampPalette(RColorBrewer::brewer.pal("PiYG", n = 8))(n)}
-    #ali_colours <- function(n){colorRampPalette(wesanderson::wes_palette("Darjeeling2", 5, type = "discrete"))(n)}
     line_col <- wesanderson::wes_palette("Darjeeling2", 1, type = "discrete")
     line_col <- "darkblue"
     dhc0 <- ali_branch(dhc0, h=0.7, col=ali_colours, groupLabels = T)
@@ -130,10 +119,6 @@ dendo_plot <- function(data_in, k = 50, j = "m", i = 0, shortnames = FALSE, clus
   if(shortnames == TRUE){labels(dhc0) <- substr(labels(dhc0),1,1)}
   short_labs <- substr(labels(dhc0),1,1)
   old_labs <- labels(dhc0)
-  #labels_colors(dhc0) <- 1
-  
-  #labels_colors(dhc0)[grepl("M:", labels(dhc0))] <- 2
-  #labels_colors(dhc0)[grepl("H:", labels(dhc0))] <- 2
   
   dhc0 %>%
     hang.dendrogram(hang = 0.1) %>% 
