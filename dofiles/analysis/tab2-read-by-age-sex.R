@@ -10,6 +10,7 @@ library(grid)
 library(gridExtra)
 
 datapath <- "/Volumes/DATA/sec-file-b-volumea/EPH/EHR group/GPRD_GOLD/Ali/2020_multimorbidity/analysis/"
+datapath <- "/Volumes/EHR Group/GPRD_GOLD/Ali/2020_multimorbidity/analysis/"
 
 theme_ali <- theme_bw() %+replace%
   theme(legend.position = "top",
@@ -255,7 +256,7 @@ DF_out_all <- DF_out
 
 
 # AGE and Gender breakdown ------------------------------------------------
-DF_out <- DF_out %>%
+DF_out <- DF_out %>% 
   filter(!grepl("_",var)) %>%
   filter(!is.na(age))
 
@@ -307,7 +308,9 @@ plot2_pc <- ggplot(fig2, aes(x = reorder(name, -value), y = value*100, colour = 
   labs(x = "Read Chapter", y = "Percentage of all primary care records by Read chapter", colour = "Exposed", fill = "Exposed") +
   scale_fill_manual(values = c("Control" = "tomato", "Case" = "darkblue")) +
   scale_colour_manual(values = c("Control" = "tomato", "Case" = "darkblue")) +
-  coord_flip() 
+  coord_flip() +
+  theme(text = element_text(size = 12), 
+        strip.text.y = element_text(angle = 0))
 plot2_pc
 dev.copy(pdf, here::here("out/Fig2_pc.pdf"), width = 10, height = 11)
   dev.off()
@@ -358,6 +361,13 @@ grid.arrange(plot2, tbl,
              heights=c(5,1))
 dev.off()
 pdf(here::here("out/Fig2_table_pc.pdf"), width = 10, height = 10)
+grid.arrange(plot2_pc, tbl,
+             nrow=2,
+             as.table=TRUE,
+             heights=c(5,1))
+dev.off()
+## output as png for google docs purposes
+png(here::here("out/Fig2_table_pc.png"), width = 600, height = 650)
 grid.arrange(plot2_pc, tbl,
              nrow=2,
              as.table=TRUE,
@@ -590,6 +600,19 @@ tbl <- tableGrob(SummaryTable, rows=NULL, theme=tt)
 
 pdf(here::here("out/Supp_barchart_full.pdf"), width = 6, height = 6)
 grid.arrange(plot1_n_full, tbl,
+             nrow=2,
+             as.table=TRUE,
+             heights=c(5,1))
+dev.off()
+
+pdf(here::here("out/Supp_barchart_full_pc.pdf"), width = 6, height = 6)
+grid.arrange(plot1_pc_full, tbl,
+             nrow=2,
+             as.table=TRUE,
+             heights=c(5,1))
+dev.off()
+png(here::here("out/Supp_barchart_full_pc.png"), width = 450, height = 480)
+grid.arrange(plot1_pc_full, tbl,
              nrow=2,
              as.table=TRUE,
              heights=c(5,1))
