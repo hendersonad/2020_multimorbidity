@@ -6,6 +6,18 @@ A project comparing primary care records in people with and without common aller
 
 For more information please visit [this website](https://a-henderson91.github.io/MICAC/)
 
+
+
+# RENV
+Run renv::init()
+
+# For analysis only
+## load data into local repo
+Change filepath to wherever the LSHTM secure server is for you and start running main_multimorbidity.R
+
+##
+
+
 ## Code and codelists
 All code and codelists are available in this repository. The code in `/dofile/dataMx` was used to extract data, define exposed participants, match to unexposed participants by age, sex and GP practice, then define the Read chapter of each event. 
 s
