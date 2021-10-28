@@ -7,6 +7,8 @@ library(readr)
 
 datapath <- "/Volumes/EHR group/GPRD_GOLD/Ali/2020_multimorbidity/analysis/"
 
+dir.create(file.path(here("datafiles")))
+
 for(study in c("asthma", "eczema")){
   study_info <- read_csv(file = paste0(datapath, study, "_patient_info.csv"))
   case_control <- read_csv(file = paste0(datapath, study, "_case_control_set.csv"))
@@ -20,6 +22,17 @@ for(study in c("asthma", "eczema")){
 
 
 # Asthma ------------------------------------------------------------------
+## Prepare data
+source(here("dofiles/analysis/Multimorb_asthma_preparedata.R"))
+
+## Make tables 
+source(here("dofiles/analysis/networks4_asthma.R"))
+
+## Run regressions
+
+## plot networks 
+
+# Eczema ------------------------------------------------------------------
 ## Prepare data
 source(here("dofiles/analysis/Multimorb_asthma_preparedata.R"))
 
