@@ -6,6 +6,7 @@
 
 # packages ----------------------------------------------------------------
 library(arrow)
+library(here)
 
 # load raw data -----------------------------------------------------------
 
@@ -56,8 +57,9 @@ names(drd) <- c("pa","ed","rc")
 drd$pa <- drd$pa - mipid + 1
 drd$ed <- as.numeric(as.Date("2020-12-12") - as.Date(drd$ed, "%d%b%Y"))/365.25
 
-
 ## Save simplified data
-save(dpd, dcd, drd, file=here("datafiles","simpdata_asthma.RData"))
+write_parquet(dpd, sink=here("datafiles","simpdata_asthma_dpd.gz.parquet"))
+write_parquet(dcd, sink=here("datafiles","simpdata_asthma_dcd.gz.parquet"))
+write_parquet(drd, sink=here("datafiles","simpdata_asthma_drd.gz.parquet"))
 
 

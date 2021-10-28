@@ -1,9 +1,6 @@
-setwd("~/OneDrive - London School of Hygiene and Tropical Medicine/multimorb")
-setwd('J:/EHR-Working/Amy/multimorbidity/data')
-
 ## Network Analysis AD multimorbidity with real data
 
-.libPaths('H:/R/Rlibs')
+#.libPaths('H:/R/Rlibs')
 library(tidyverse)
 library(survival)
 library(multcomp)
@@ -16,20 +13,14 @@ library(factoextra)
 library(dendextend)
 library(here)
 library(igraph)
-
+library(arrow)
 
 # Load simplified data
-
-if(grepl("macd0015", Sys.info()["nodename"])){
-  datapath <- "/Volumes/EHR group/GPRD_GOLD/Ali/2020_multimorbidity/analysis/"
-  load(file=paste0(datapath, "simpdata_asthma.RData"))
-  rch <- read_csv(here::here("codelists/read_chapters.csv"))
-}else{
-  setwd("Z:/sec-file-b-volumea/EPH/EHR group/GPRD_GOLD/Ali/2020_multimorbidity/analysis")
-  datapath <- "Z:/sec-file-b-volumea/EPH/EHR group/GPRD_GOLD/Ali/2020_multimorbidity/analysis"
-  
-  load(here("datafiles","simpdata_asthma.RData"))
-}
+dpd <- read_parquet(file = here("datafiles/asthma_case_control_set.gz.parquet"))
+dcd <- read_parquet(file = here("datafiles/asthma_patient_info.gz.parquet"))
+drd <- read_parquet(file = here("datafiles/asthma_read_chapter.gz.parquet"))
+# and chapter names
+rch <- read_csv(here::here("codelists/read_chapters.csv"))
 
 
 mipid <- 1028
@@ -60,10 +51,10 @@ dpw <- left_join(dpw[, c('pa', 'mu', 'ca', 'pr', 'can', 'tb', 'td', 'fua')], drw
 # Turn end of followup dates and dates of events into ages 
 for(c in grep('fi_', names(dpw))) dpw[,c] <- as.numeric( dpw[,c] - dpw$tb ) /365.25
 
-save(dpw, file=paste0(datapath,"datawide_asthma.RData"))
+#save(dpw, file=paste0(datapath,"datawide_asthma.RData"))
+write_parquet(dpw, sink = here("datafiles", "datawide_asthma.gz.parquet"))
 
-
-load(paste0(datapath,"datawide_asthma.RData"))
+#load(paste0(datapath,"datawide_asthma.RData"))
 
 
 ###############################################################.
@@ -159,7 +150,8 @@ for(e1 in ev[-length(ev)]){
   }
 }
 
-save(edj, file=paste0(datapath, "edges2_jac1_asthma.RData"))
+#save(edj, file=paste0(datapath, "edges2_jac1_asthma.RData"))
+write_parquet(edj, sink = here("datafiles", "edges2_jac1_asthma.gz.parquet"))
 
 
 ###########################################.
@@ -167,7 +159,7 @@ save(edj, file=paste0(datapath, "edges2_jac1_asthma.RData"))
 ###  Hierarchical cluster analysis
 ###
 
-rch <- read_csv(here::here("codelists/read_chapters.csv"))
+
 
 #load(here::here("datafiles", "edges2_jac1_asthma.RData"))
 
@@ -521,8 +513,8 @@ for(p in 1:length(P2)){
   }
 }
 
-save(EDS, file="simul.RData")
-
+#save(EDS, file="simul.RData")
+write_parquet(EDS, sink = here("datafiles", "simul.gz.parquet"))
 
 # Age sampling
 as <- list(c(1,1), c(2,8), c(5,5), c(8,2)) # a,b parameters for beta age sampling distribution
