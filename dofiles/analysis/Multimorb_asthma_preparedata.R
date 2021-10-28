@@ -5,31 +5,14 @@
 
 
 # packages ----------------------------------------------------------------
-pacman::p_load('haven')
-
-
+library('haven')
 
 # load raw data -----------------------------------------------------------
 
-if(grepl("macd0015", Sys.info()["nodename"])){
-  datapath <- "/Volumes/EHR group/GPRD_GOLD/Ali/2020_multimorbidity/analysis/"
-  dcc <- read.csv(file=paste0(datapath, "asthma_case_control_set.csv"), stringsAsFactors = F)
-    dpi <- read.csv(file=paste0(datapath, "asthma_patient_info.csv"), stringsAsFactors = F)
-    drc <- haven::read_dta(paste0(datapath,'asthma_read_chapter.dta')) 
-    # drc <- read.csv(file="asthma_read_chapter.csv", colClasses = c("integer", "character", "NULL", "character"))
+  dcc <- read_parquet(file = here("datafiles/asthma_case_control_set.gz.parquet"))
+  dpi <- read_parquet(file = here("datafiles/asthma_patient_info.gz.parquet"))
+  drc <- read_parquet(file = here("datafiles/asthma_read_chapter.gz.parquet"))
   
-}else{
-  setwd("Z:/sec-file-b-volumea/EPH/EHR group/GPRD_GOLD/Ali/2020_multimorbidity/analysis")
-  datapath <- "Z:/sec-file-b-volumea/EPH/EHR group/GPRD_GOLD/Ali/2020_multimorbidity/analysis"
-  dcc <- read.csv(file="asthma_case_control_set.csv", stringsAsFactors = F)
-  dpi <- read.csv(file="asthma_patient_info.csv", stringsAsFactors = F)
-  drc <- haven::read_dta('asthma_read_chapter.dta') 
-  # drc <- read.csv(file="asthma_read_chapter.csv", colClasses = c("integer", "character", "NULL", "character"))
-}
-
-
-
-
 sum(dcc$caseid==dcc$contid)
 length(unique(dcc$caseid))
 length(unique(dcc$contid))
@@ -75,6 +58,6 @@ drd$ed <- as.numeric(as.Date("2020-12-12") - as.Date(drd$ed, "%d%b%Y"))/365.25
 
 
 ## Save simplified data
-save(dpd, dcd, drd, file=paste0(datapath,"simpdata_asthma.RData"))
+save(dpd, dcd, drd, file=here("datafiles","simpdata_asthma.RData"))
 
 
