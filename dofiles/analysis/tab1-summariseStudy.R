@@ -1,13 +1,13 @@
-p_load(tidyr)
-p_load(dplyr)
-p_load(readr)
-p_load(haven)
-p_load(ggplot2)
-p_load(data.table)
-p_load(here)
-p_load(grid)
-p_load(gridExtra)
-p_load(dataReporter) # https://github.com/ekstroem/dataReporter
+library(tidyr)
+library(dplyr)
+library(readr)
+library(haven)
+library(ggplot2)
+library(data.table)
+library(here)
+library(grid)
+library(gridExtra)
+library(dataReporter) # https://github.com/ekstroem/dataReporter
 
 names <- read_csv(here("codelists/chapter_names.csv"))
 #readcodes <- haven::read_dta(here::here("datafiles", paste0(study,"_read_chapter.dta")))
