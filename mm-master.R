@@ -26,24 +26,11 @@ for(study in c("asthma", "eczema")){
 source(here("dofiles/analysis/tab1-summariseStudy.R"))
 source(here("dofiles/analysis/tab2-read-by-age-sex.R"))
 
-# Asthma ------------------------------------------------------------------
 ## Prepare data
-source(here("dofiles/analysis/Multimorb_asthma_preparedata.R"))
+source(here("dofiles/analysis/multimorbidity_preparedata.R"))
 
 ## Run regressions
-source(here("dofiles/analysis/networks4_asthma.R"))
-
-## Run regressions
+source(here("dofiles/analysis/networks_e_a.R"))
 
 ## plot networks 
-
-# Eczema ------------------------------------------------------------------
-## Prepare data
-source(here("dofiles/analysis/Multimorb_asthma_preparedata.R"))
-
-## Make tables 
-source(here("dofiles/analysis/networks4_asthma.R"))
-
-## Run regressions
-
-## plot networks 
+source(here("dofiles/analysis/networks_plots.R"))

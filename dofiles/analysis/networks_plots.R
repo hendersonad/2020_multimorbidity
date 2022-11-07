@@ -17,52 +17,30 @@ library(wesanderson)
 
 source(here("programs/bespoke_colour_branches.R")) 
 colgrid <- rgb(0.4,0.4,0.4,0.1)
-# load data  --------------------------------------------------------------
-datapath <- "Z:/GPRD_GOLD/Ali/2020_multimorbidity/analysis"
 
-if(grepl("macd0015", Sys.info()["nodename"])){
-  load(paste0(datapath,"edges2_jac1_asthma.RData"))
-  edj_asthma <- edj
-  load(paste0(datapath,"edges2_jac1.RData"))
-  edj_eczema <- edj
-  
-  rch <- read_csv(here("codelists/chapter_names.csv"))
-  
-  
-  refde <- "2020-12-12"
-  load(paste0(datapath,"simpdata_asthma.RData"))
-  drd$ed <- as.Date(refde) - drd$ed * 365.25
-  drd_asthma <- drd
-  load(paste0(datapath,"simpdata.RData"))
-  drd$ed <- as.Date(refde) - drd$ed * 365.25
-  drd_eczema <- drd
-  
-  load(paste0(datapath,"datawide_asthma.RData"))
-  dpw_asthma <- dpw
-  load(paste0(datapath,"datawide.RData"))
-  dpw_eczema <- dpw
-}else{
-  load(here("datafiles/edges2_jac1_asthma.RData"))
-  edj_asthma <- edj
-  load(here("datafiles/edges2_jac1.RData"))
-  edj_eczema <- edj
-  
-  rch <- read_csv(here("codelists/read_chapters.csv"))
-  
-  
-  refde <- "2020-12-12"
-  load(here("datafiles","simpdata_asthma.RData"))
-  drd$ed <- as.Date(refde) - drd$ed * 365.25
-  drd_asthma <- drd
-  load(here("datafiles","simpdata.RData"))
-  drd$ed <- as.Date(refde) - drd$ed * 365.25
-  drd_eczema <- drd
-  
-  load(here("datafiles/datawide_asthma.RData"))
-  dpw_asthma <- dpw
-  load(here("datafiles/datawide.RData"))
-  dpw_eczema <- dpw
-}
+library(here)
+source(here("mm-filepaths.R"))
+
+# load data  --------------------------------------------------------------
+load(paste0(datapath,"edges2_jac1_asthma.RData"))
+edj_asthma <- edj
+load(paste0(datapath,"edges2_jac1_eczema.RData"))
+edj_eczema <- edj
+
+rch <- read_csv(here("codelists/chapter_names.csv"))
+
+refde <- "2020-12-12"
+load(paste0(datapath,"simpdata_asthma.RData"))
+drd$ed <- as.Date(refde) - drd$ed * 365.25
+drd_asthma <- drd
+load(paste0(datapath,"simpdata.RData"))
+drd$ed <- as.Date(refde) - drd$ed * 365.25
+drd_eczema <- drd
+
+load(paste0(datapath,"datawide_asthma.RData"))
+dpw_asthma <- dpw
+load(paste0(datapath,"datawide.RData"))
+dpw_eczema <- dpw
 
 # data formatting ---------------------------------------------------------
 format_edges <- function(data_in){
@@ -78,16 +56,12 @@ format_edges <- function(data_in){
                 e1 = rch$name[match(substring(f1,4,4), rch$var)],
                 e2 = rch$name[match(substring(f2,4,4), rch$var)]
   )
-                #e1=paste(substring(f1,4,4),rch$name[match(substring(f1,4,4), rch$var)], sep=": "), 
-                #e2=paste(substring(f2,4,4), rch$name[match(substring(f2,4,4), rch$var)], sep=": "))
   
   data_out <- edj
   data_out
 }
 
 # Dendrogram plot ---------------------------------------------------------
-
-#par(mar=c(4,2,3,13))
 dendo_plot <- function(data_in, k = 50, j = "m", i = 0, shortnames = FALSE, cluster_method = "complete"){
   edj2 <- format_edges(data_in)
   
@@ -96,7 +70,7 @@ dendo_plot <- function(data_in, k = 50, j = "m", i = 0, shortnames = FALSE, clus
                     rm0_50=1, rm1_50=1, rw0_50=1, rw1_50=1, rm0_18=1, rm1_18=1, rw0_18=1, rw1_18=1)
   ddm <- rbind(edj2[,c("e1","e2", "rm0_50","rm1_50", "rw0_50","rw1_50", "rm0_18","rm1_18", "rw0_18","rw1_18")],ddm)
 
-  md0 <- tapply(c(1-ddm[, paste0('r',j,i,'_',k)]), ddm[,c("e1","e2")], mean)
+  md0 <- tapply(X = c(1-ddm[, paste0('r',j,i,'_',k)]), INDEX = ddm[,c("e1","e2")], mean)
   hc0 <- hclust(as.dist(t(md0)), method = cluster_method)
   dhc0 <- as.dendrogram(hc0)
   labels_cex(dhc0) <- 1.4
@@ -132,9 +106,6 @@ dendo_plot <- function(data_in, k = 50, j = "m", i = 0, shortnames = FALSE, clus
 
 ## test
 dendo_plot(data_in = edj_eczema, k = 18, j = "m", i = 0)
-dendo_plot(data_in = edj_asthma, k = 18, j = "m", i = 0)
-dendo_plot(data_in = edj_asthma, k = 18, j = "m", i = 1)
-dendo_plot(data_in = edj_asthma, k = 50, j = "m", i = 1)
 
 # network plots -----------------------------------------------------------
 ntwk_nodes <- function(cohort = "asthma"){
@@ -213,8 +184,10 @@ ntwk_plot <- function(cohort = "asthma", k = 50, j = "m", i = 1){
       #net <- visNetwork(nodes, edges, main=tit) %>% visNodes(shape="ellipse") %>% visIgraphLayout(randomSeed = 1999) %>% visEdges(width="width", smooth =T)
       #print(net)
 }
-ntwk_plot(cohort = "asthma", k = 50, j = "w", i = 0)
-ntwk_plot(cohort = "asthma", k = 50, j = "w", i = 1)
+
+# test
+# ntwk_plot(cohort = "eczema", k = 50, j = "w", i = 0)
+# ntwk_plot(cohort = "asthma", k = 50, j = "w", i = 1)
 
 
 # combine plots  ----------------------------------------------------------
@@ -282,6 +255,7 @@ dev.off()
 
 
 # all dendrograms ---------------------------------------------------------
+CAPTIONS <- 1:16 %>% as.roman() %>% stringr::str_to_lower()
 plot_all_dendo <- function(ii = 0, cc = "eczema", l = 1){
   short <- T
   #if(l!=1){par(mar=c(2,2,1.5,2)+0.5)}else{par(mar=c(4,2,1.5,2)+0.5)}
@@ -296,31 +270,31 @@ plot_all_dendo <- function(ii = 0, cc = "eczema", l = 1){
   dendo_plot(data_in = edj_plot, i = ii, k = 18, j = "m", shortnames = short)
     mtext(side = 1, "P(A|B)", cex=1, font=1, padj=pp, adj=1)
   if(ii==1){
-    mtext(side = 3, paste0(LETTERS[l],": Age 18, men ", cc), adj = 0, font = 2)
+    mtext(side = 3, paste0(CAPTIONS[l],": Age 18, men ", cc), adj = 0, font = 2)
     #if(l==1100){mtext(side = 1, "Probability of one condition given the other", cex=1, font=1, padj=3, adj =0)}
   }else{
-    mtext(side = 3, paste0(LETTERS[l], ": matched controls ", cc,")"), adj = 0, font = 2)
+    mtext(side = 3, paste0(CAPTIONS[l], ": matched controls ", cc,")"), adj = 0, font = 2)
   }
   dendo_plot(data_in = edj_plot, i = ii, k = 18, j = "w", shortnames = short)
     mtext(side = 1, "P(A|B)", cex=1, font=1, padj=pp, adj=1)
   if(ii==1){
-    mtext(side = 3, paste0(LETTERS[l+1],": Age 18, women ", cc), adj = 0, font = 2)
+    mtext(side = 3, paste0(CAPTIONS[l+1],": Age 18, women ", cc), adj = 0, font = 2)
   }else{
-    mtext(side = 3, paste0(LETTERS[l+1], ": matched controls ", cc,")"), adj = 0, font = 2)
+    mtext(side = 3, paste0(CAPTIONS[l+1], ": matched controls ", cc,")"), adj = 0, font = 2)
   }
   dendo_plot(data_in = edj_plot, i = ii, k = 50, j = "m", shortnames = short)
     mtext(side = 1, "P(A|B)", cex=1, font=1, padj=pp, adj=1)
   if(ii==1){
-    mtext(side = 3, paste0(LETTERS[l+2],": Age 50, men ", cc), adj = 0, font = 2)
+    mtext(side = 3, paste0(CAPTIONS[l+2],": Age 50, men ", cc), adj = 0, font = 2)
   }else{
-    mtext(side = 3, paste0(LETTERS[l+2], ": matched controls ", cc,")"), adj = 0, font = 2)
+    mtext(side = 3, paste0(CAPTIONS[l+2], ": matched controls ", cc,")"), adj = 0, font = 2)
   }
   dendo_plot(data_in = edj_plot, i = ii, k = 50, j = "w", shortnames = short)
     mtext(side = 1, "P(A|B)", cex=1, font=1, padj=pp, adj=1)
   if(ii==1){
-    mtext(side = 3, paste0(LETTERS[l+3],": Age 50, women ", cc), adj = 0, font = 2)
+    mtext(side = 3, paste0(CAPTIONS[l+3],": Age 50, women ", cc), adj = 0, font = 2)
   }else{
-    mtext(side = 3, paste0(LETTERS[l+3], ": matched controls (", cc,")"), adj = 0, font = 2)
+    mtext(side = 3, paste0(CAPTIONS[l+3], ": matched controls (", cc,")"), adj = 0, font = 2)
   }
 }
 pdf(here::here("out/fig5_dendo_all.pdf"), 14, 14)
@@ -338,112 +312,6 @@ par(mfcol = c(4,4))
   plot_all_dendo(ii = 0, cc = "asthma",14, cluster_method = "ward.D")
 dev.off()
 
-# pdf(here::here("out/fig2_eczema.pdf"), 13, 13)
-# par(mar=c(4,2,3,5))
-# par(mfrow = c(2,2))
-#   dendo_plot(data_in = edj_eczema, i = 1, k = 18, j = "m")
-#     mtext(side = 3, "A: Age 18, men", adj = 0, font = 2)
-#   dendo_plot(data_in = edj_eczema, i = 1, k = 18, j = "w")
-#     mtext(side = 3, "B: Age 18, women", adj = 0, font = 2)
-#   dendo_plot(data_in = edj_eczema, i = 1, k = 50, j = "m")
-#     mtext(side = 3, "C: Age 50, men", adj = 0, font = 2)
-#   dendo_plot(data_in = edj_eczema, i = 1, k = 50, j = "w")
-#     mtext(side = 3, "D: Age 50, women", adj = 0, font = 2)
-# dev.off()
-# 
-# pdf(here::here("out/fig2_eczemacontrols.pdf"), 13, 13)
-# par(mar=c(4,2,3,5))
-# par(mfrow = c(2,2))
-#   dendo_plot(data_in = edj_eczema, i = 0, k = 18, j = "m")
-#     mtext(side = 3, "A: Age 18, men", adj = 0, font = 2)
-#   dendo_plot(data_in = edj_eczema, i = 0, k = 18, j = "w")
-#     mtext(side = 3, "B: Age 18, women", adj = 0, font = 2)
-#   dendo_plot(data_in = edj_eczema, i = 0, k = 50, j = "m")
-#     mtext(side = 3, "C: Age 50, men", adj = 0, font = 2)
-#   dendo_plot(data_in = edj_eczema, i = 0, k = 50, j = "w")
-#     mtext(side = 3, "D: Age 50, women", adj = 0, font = 2)
-# dev.off()
-# 
-# pdf(here::here("out/fig2_asthma.pdf"), 13, 13)
-# par(mar=c(4,2,3,5))
-# par(mfrow = c(2,2))
-#   dendo_plot(data_in = edj_asthma, i = 1, k = 18, j = "m")
-#     mtext(side = 3, "A: Age 18, men", adj = 0, font = 2)
-#   dendo_plot(data_in = edj_asthma, i = 1, k = 18, j = "w")
-#     mtext(side = 3, "B: Age 18, women", adj = 0, font = 2)
-#   dendo_plot(data_in = edj_asthma, i = 1, k = 50, j = "m")
-#     mtext(side = 3, "C: Age 50, men", adj = 0, font = 2)
-#   dendo_plot(data_in = edj_asthma, i = 1, k = 50, j = "w")
-#     mtext(side = 3, "D: Age 50, women", adj = 0, font = 2)
-# dev.off()
-# 
-# pdf(here::here("out/fig2_asthmacontrols.pdf"), 13, 13)
-# par(mar=c(4,2,3,5))
-# par(mfrow = c(2,2))
-#   dendo_plot(data_in = edj_asthma, i = 0, k = 18, j = "m")
-#     mtext(side = 3, "A: Age 18, men", adj = 0, font = 2)
-#   dendo_plot(data_in = edj_asthma, i = 0, k = 18, j = "w")
-#     mtext(side = 3, "B: Age 18, women", adj = 0, font = 2)
-#   dendo_plot(data_in = edj_asthma, i = 0, k = 50, j = "m")
-#     mtext(side = 3, "C: Age 50, men", adj = 0, font = 2)
-#   dendo_plot(data_in = edj_asthma, i = 0, k = 50, j = "w")
-#     mtext(side = 3, "D: Age 50, women", adj = 0, font = 2)
-# dev.off()
-
-#################################################
-## do 4 plots differently (Eczema men, women, Asthma men, women)
-
-# pdf(here::here("out/fig2_ecz_men.pdf"), 13, 13)
-# par(mar=c(4,2,3,5))
-# par(mfrow = c(2,2))
-#   dendo_plot(data_in = edj_eczema, i = 1, k = 18, j = "m")
-#     mtext(side = 3, "A: Age 18, men with eczema", adj = 0, font = 2)
-#   dendo_plot(data_in = edj_eczema, i = 0, k = 18, j = "m")
-#     mtext(side = 3, "B: Age 18, matched controls", adj = 0, font = 2)
-#   dendo_plot(data_in = edj_eczema, i = 1, k = 50, j = "m")
-#     mtext(side = 3, "C: Age 50, men with eczema", adj = 0, font = 2)
-#   dendo_plot(data_in = edj_eczema, i = 0, k = 50, j = "m")
-#     mtext(side = 3, "D: Age 50, matched controls", adj = 0, font = 2)
-# dev.off()
-# 
-# pdf(here::here("out/fig2_ecz_women.pdf"), 13, 13)
-# par(mar=c(4,2,3,5))
-# par(mfrow = c(2,2))
-#   dendo_plot(data_in = edj_eczema, i = 1, k = 18, j = "w")
-#     mtext(side = 3, "A: Age 18, women with eczema", adj = 0, font = 2)
-#   dendo_plot(data_in = edj_eczema, i = 0, k = 18, j = "w")
-#     mtext(side = 3, "B: Age 18, matched controls", adj = 0, font = 2)
-#   dendo_plot(data_in = edj_eczema, i = 1, k = 50, j = "w")
-#     mtext(side = 3, "C: Age 50, women with eczema", adj = 0, font = 2)
-#   dendo_plot(data_in = edj_eczema, i = 0, k = 50, j = "w")
-#     mtext(side = 3, "D: Age 50, matched controls", adj = 0, font = 2)
-# dev.off()
-# 
-# pdf(here::here("out/fig2_ast_men.pdf"), 13, 13)
-# par(mar=c(4,2,3,5))
-# par(mfrow = c(2,2))
-#   dendo_plot(data_in = edj_asthma, i = 1, k = 18, j = "m")
-#     mtext(side = 3, "A: Age 18, men with asthma", adj = 0, font = 2)
-#   dendo_plot(data_in = edj_asthma, i = 0, k = 18, j = "m")
-#     mtext(side = 3, "B: Age 18, matched controls", adj = 0, font = 2)
-#   dendo_plot(data_in = edj_asthma, i = 1, k = 50, j = "m")
-#     mtext(side = 3, "C: Age 50, men with asthma", adj = 0, font = 2)
-#   dendo_plot(data_in = edj_asthma, i = 0, k = 50, j = "m")
-#     mtext(side = 3, "D: Age 50, matched controls", adj = 0, font = 2)
-# dev.off()
-# 
-# pdf(here::here("out/fig2_ast_women.pdf"), 13, 13)
-# par(mar=c(4,2,3,5))
-# par(mfrow = c(2,2))
-#   dendo_plot(data_in = edj_asthma, i = 1, k = 18, j = "w")
-#     mtext(side = 3, "A: Age 18, women with asthma", adj = 0, font = 2)
-#   dendo_plot(data_in = edj_asthma, i = 0, k = 18, j = "w")
-#     mtext(side = 3, "B: Age 18, matched controls", adj = 0, font = 2)
-#   dendo_plot(data_in = edj_asthma, i = 1, k = 50, j = "w")
-#     mtext(side = 3, "C: Age 50, women with asthma", adj = 0, font = 2)
-#   dendo_plot(data_in = edj_asthma, i = 0, k = 50, j = "w")
-#     mtext(side = 3, "D: Age 50, matched controls", adj = 0, font = 2)
-# dev.off()
 
 
 # all networks ------------------------------------------------------------
@@ -451,27 +319,27 @@ plot_all_ntwks <- function(ii = 0, cc = "eczema", l = 1){
   par(mar = (c(3,0.5,3,0)+0.25))
   ntwk_plot(cohort = cc, i = ii, k = 18, j = "m")
     if(ii==1){
-      mtext(side = 3, paste0(LETTERS[l],": Age 18, men ", cc), adj = 0, font = 2)
+      mtext(side = 3, paste0(CAPTIONS[l],": Age 18, men ", cc), adj = 0, font = 2)
     }else{
-      mtext(side = 3, paste0(LETTERS[l]), adj = 0, font = 2)
+      mtext(side = 3, paste0(CAPTIONS[l]), adj = 0, font = 2)
     }
   ntwk_plot(cohort = cc, i = ii, k = 18, j = "w")
     if(ii==1){
-      mtext(side = 3, paste0(LETTERS[l+1],": Age 18, women ", cc), adj = 0, font = 2)
+      mtext(side = 3, paste0(CAPTIONS[l+1],": Age 18, women ", cc), adj = 0, font = 2)
     }else{
-      mtext(side = 3, paste0(LETTERS[l+1]), adj = 0, font = 2)
+      mtext(side = 3, paste0(CAPTIONS[l+1]), adj = 0, font = 2)
     }
   ntwk_plot(cohort = cc, i = ii, k = 50, j = "m")
     if(ii==1){
-      mtext(side = 3, paste0(LETTERS[l+2],": Age 50, men ", cc), adj = 0, font = 2)
+      mtext(side = 3, paste0(CAPTIONS[l+2],": Age 50, men ", cc), adj = 0, font = 2)
     }else{
-      mtext(side = 3, paste0(LETTERS[l+2]), adj = 0, font = 2)
+      mtext(side = 3, paste0(CAPTIONS[l+2]), adj = 0, font = 2)
     }
   ntwk_plot(cohort = cc, i = ii, k = 50, j = "w")
     if(ii==1){
-      mtext(side = 3, paste0(LETTERS[l+3],": Age 50, women ", cc), adj = 0, font = 2)
+      mtext(side = 3, paste0(CAPTIONS[l+3],": Age 50, women ", cc), adj = 0, font = 2)
     }else{
-      mtext(side = 3, paste0(LETTERS[l+3]), adj = 0, font = 2)
+      mtext(side = 3, paste0(CAPTIONS[l+3]), adj = 0, font = 2)
     }
 }
 pdf(here::here("out/fig4_ntwk_eczema_full.pdf"), 10, 10)

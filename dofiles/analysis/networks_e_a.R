@@ -2,8 +2,10 @@
 # Multimorbidity
 # 
 
-rm(list=ls())
-setwd('Z:/GPRD_GOLD/Ali/2020_multimorbidity/analysis')
+library(lme4)
+library(multcomp)
+library(here)
+source(here::here("mm-filepaths.R"))
 
 ###############################################################.
 ###
@@ -84,7 +86,7 @@ jac1 <- function(DW, E1, E2, Z=NULL){
 ###  ECZEMA   ####
 ###
 
-load("datawide.RData")
+load(paste0(datapath, "datawide_eczema.RData"))
 
 ###
 ###  Calculate edges with JAACCARD distance
@@ -104,7 +106,7 @@ for(e1 in ev[-length(ev)]){
   }
 }
 
-save(edj, file="edges2_jac1.RData")
+save(edj, file=paste0(datapath,"edges2_jac1_eczema.RData"))
 
 
 
@@ -113,7 +115,7 @@ save(edj, file="edges2_jac1.RData")
 ###  ASTHMA   ####
 ###
 
-load("datawide_asthma.RData")
+load(paste0(datapath,"datawide_asthma.RData"))
 
 ###
 ###  Calculate edges with JAACCARD distance
@@ -133,4 +135,4 @@ for(e1 in ev[-length(ev)]){
   }
 }
 
-save(edj, file="edges2_jac1_asthma.RData")
+save(edj, file=paste0(datapath,"edges2_jac1_asthma.RData"))
