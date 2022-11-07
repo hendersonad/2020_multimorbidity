@@ -1,3 +1,7 @@
+mm-filepaths.R
+mm-paths.do
+mm-paths-mac.do
+
 *.log
 posted/
 datafiles/
