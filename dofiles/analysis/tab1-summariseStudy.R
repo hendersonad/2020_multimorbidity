@@ -1,3 +1,4 @@
+library(arrow)
 library(tidyr)
 library(dplyr)
 library(readr)
@@ -10,22 +11,14 @@ library(gridExtra)
 library(dataReporter) # https://github.com/ekstroem/dataReporter
 
 names <- read_csv(here("codelists/chapter_names.csv"))
-#readcodes <- haven::read_dta(here::here("datafiles", paste0(study,"_read_chapter.dta")))
 
-study = "asthma"
-
-if(grepl("macd0015", Sys.info()["nodename"])){
-  datapath <- "/Volumes/EHR group/GPRD_GOLD/Ali/2020_multimorbidity/analysis/"
-  study_info <- read_csv(file = paste0(datapath, study, "_patient_info.csv"))
-  case_control <- read_csv(file = paste0(datapath, study, "_case_control_set.csv"))
-  readcodes <- haven::read_dta(paste0(datapath,study,'_read_chapter.dta')) 
-}else{
-  setwd("Z:/sec-file-b-volumea/EPH/EHR group/GPRD_GOLD/Ali/2020_multimorbidity/analysis")
-  datapath <- "Z:/sec-file-b-volumea/EPH/EHR group/GPRD_GOLD/Ali/2020_multimorbidity/analysis"
-  readcodes <- haven::read_dta(paste0(datapath,study,'_asthma_read_chapter.dta')) 
-}
+source(here::here("mm-filepaths.R"))
 
 get_table1 <- function(study = "asthma"){
+  study_info <- read_parquet(paste0(datapath,study,"_patient_info.gz.parquet"))
+  case_control <- read_parquet(paste0(datapath,study,"_case_control_set.gz.parquet"))
+  readcodes <-  read_parquet(paste0(datapath,study,"_read_chapter.gz.parquet"))
+  
   cases <- case_control %>%
     dplyr::select(caseid) %>% 
     distinct() %>%
@@ -116,7 +109,9 @@ get_table1 <- function(study = "asthma"){
 }
 
 table1_asthma <- get_table1(study = "asthma")
+  write_csv(table1_asthma, here::here("out/table1_asthma.csv"))
 table1_eczema <- get_table1(study = "eczema")
+  write_csv(table1_eczema, here::here("out/table1_eczema.csv"))
 
   
   
