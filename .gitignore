@@ -4,7 +4,6 @@ mm-paths-mac.do
 
 *.log
 posted/
-datafiles/
 
 *.Rhistory
 .DS_Store
