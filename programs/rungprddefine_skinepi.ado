@@ -1,4 +1,4 @@
-program define rungprddefine_skinepi
+program define rungprddefine
 
 version 11
 
