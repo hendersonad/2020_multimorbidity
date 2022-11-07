@@ -8,11 +8,21 @@
 library(arrow)
 library(here)
 
+setwd("Z:/GPRD_GOLD/Ali/2020_multimorbidity/analysis")
+
 # load raw data -----------------------------------------------------------
 
-  dcc <- read_parquet(file = here("datafiles/asthma_case_control_set.gz.parquet"))
-  dpi <- read_parquet(file = here("datafiles/asthma_patient_info.gz.parquet"))
-  drc <- read_parquet(file = here("datafiles/asthma_read_chapter.gz.parquet"))
+  # dcc <- read_parquet(file = here("datafiles/asthma_case_control_set.gz.parquet"))
+  # dpi <- read_parquet(file = here("datafiles/asthma_patient_info.gz.parquet"))
+  # drc <- read_parquet(file = here("datafiles/asthma_read_chapter.gz.parquet"))
+  
+  dcc <- read.csv(file="asthma_case_control_set.csv", stringsAsFactors = F)
+  dpi <- read.csv(file="asthma_patient_info.csv", stringsAsFactors = F)
+  drc <- read.csv(file="asthma_read_chapter.csv", colClasses = c("integer", "character", "NULL", "character"))
+  
+  ## how much data after covid pandemic?
+  drc$date2 <- lubridate::parse_date_time(drc$eventdate, orders = "dbY")
+  table(drc$date2 > as.Date("2020-04-01"))
   
 sum(dcc$caseid==dcc$contid)
 length(unique(dcc$caseid))

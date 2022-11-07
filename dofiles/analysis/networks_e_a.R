@@ -3,7 +3,7 @@
 # 
 
 rm(list=ls())
-setwd('J:/EHR-Working/Amy/multimorbidity/data')
+setwd('Z:/GPRD_GOLD/Ali/2020_multimorbidity/analysis')
 
 ###############################################################.
 ###

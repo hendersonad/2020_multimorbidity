@@ -18,7 +18,7 @@ library(wesanderson)
 source(here("programs/bespoke_colour_branches.R")) 
 colgrid <- rgb(0.4,0.4,0.4,0.1)
 # load data  --------------------------------------------------------------
-datapath <- "/Volumes/EHR group/GPRD_GOLD/Ali/2020_multimorbidity/analysis/"
+datapath <- "Z:/GPRD_GOLD/Ali/2020_multimorbidity/analysis"
 
 if(grepl("macd0015", Sys.info()["nodename"])){
   load(paste0(datapath,"edges2_jac1_asthma.RData"))

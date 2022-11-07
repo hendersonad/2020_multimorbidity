@@ -9,8 +9,16 @@ library(here)
 library(grid)
 library(gridExtra)
 
-datapath <- "/Volumes/DATA/sec-file-b-volumea/EPH/EHR group/GPRD_GOLD/Ali/2020_multimorbidity/analysis/"
-datapath <- "/Volumes/EHR Group/GPRD_GOLD/Ali/2020_multimorbidity/analysis/"
+if(grepl("macd0015", Sys.info()["nodename"])){
+  datapath <- "/Volumes/EHR group/GPRD_GOLD/Ali/2020_multimorbidity/analysis/"
+  study_info <- read_csv(file = paste0(datapath, study, "_patient_info.csv"))
+  case_control <- read_csv(file = paste0(datapath, study, "_case_control_set.csv"))
+  readcodes <- haven::read_dta(paste0(datapath,study,'_read_chapter.dta')) 
+}else{
+  setwd("Z:/sec-file-b-volumea/EPH/EHR group/GPRD_GOLD/Ali/2020_multimorbidity/analysis")
+  datapath <- "Z:/sec-file-b-volumea/EPH/EHR group/GPRD_GOLD/Ali/2020_multimorbidity/analysis"
+  readcodes <- haven::read_dta(paste0(datapath,study,'_asthma_read_chapter.dta')) 
+}
 
 theme_ali <- theme_bw() %+replace%
   theme(legend.position = "top",

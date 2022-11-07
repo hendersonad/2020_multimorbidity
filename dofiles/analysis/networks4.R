@@ -1,5 +1,3 @@
-setwd("~/OneDrive - London School of Hygiene and Tropical Medicine/multimorb")
-setwd('J:/EHR-Working/Amy/multimorbidity/data')
 
 ## Network Analysis AD multimorbidity with real data
 
@@ -17,6 +15,7 @@ library(dendextend)
 
 
 # Load simplified data
+setwd('Z:/GPRD_GOLD/Ali/2020_multimorbidity/analysis')
 load("simpdata.RData")
 
 mipid <- 1028

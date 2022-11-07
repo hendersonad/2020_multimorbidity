@@ -5,14 +5,15 @@
 
 
 rm(list=ls())
-setwd("Z:/sec-file-b-volumea/EPH/EHR group/GPRD_GOLD/Ali/2020_multimorbidity/analysis")
+setwd("Z:/GPRD_GOLD/Ali/2020_multimorbidity/analysis")
 
 dcc <- read.csv(file="eczema_case_control_set.csv", stringsAsFactors = F)
 dpi <- read.csv(file="eczema_patient_info.csv", stringsAsFactors = F)
 drc <- read.csv(file="eczema_read_chapter.csv", colClasses = c("integer", "character", "NULL", "character"))
 
-
-
+## how much data after covid pandemic?
+drc$date2 <- lubridate::parse_date_time(drc$eventdate, orders = "dbY")
+table(drc$date2 > as.Date("2020-04-01"))
 
 sum(dcc$caseid==dcc$contid)
 length(unique(dcc$caseid))
