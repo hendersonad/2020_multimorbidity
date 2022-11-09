@@ -9,18 +9,10 @@ source(here("mm-filepaths.R"))
 
 # load raw data -----------------------------------------------------------
 for(study in c("asthma", "eczema")){
+  print(study)
   dpi <- read_parquet(paste0(datapath,study,"_patient_info.gz.parquet"))
   dcc <- read_parquet(paste0(datapath,study,"_case_control_set.gz.parquet"))
   drc <-  read_parquet(paste0(datapath,study,"_read_chapter.gz.parquet"))
-  
-  ## how much data after covid pandemic?
-  drc$date2 <- lubridate::parse_date_time(drc$eventdate, orders = "dbY")
-  table(drc$date2 > as.Date("2020-04-01"))
-  
-  sum(dcc$caseid==dcc$contid)
-  length(unique(dcc$caseid))
-  length(unique(dcc$contid))
-  length(unique(drc$patid))
   
   ## Prepare data for analyis
   # get case for each control
@@ -46,16 +38,18 @@ for(study in c("asthma", "eczema")){
   dcd$co <- dcd$co - mipid + 1
   
   # Simplify events data
-  drd <- drc
+  drd <- drc %>% dplyr::select(patid, eventdate, readchapter)
+  rm(drc)
+  rm(dpi)
+  rm(dcc)
+  
   names(drd) <- c("pa","ed","rc")
   drd$pa <- drd$pa - mipid + 1
   drd$ed <- as.numeric(as.Date("2020-12-12") - as.Date(drd$ed, "%d%b%Y"))/365.25
   
-  
   ## Save simplified data
   save(dpd, dcd, drd, file=paste0(datapath,"simpdata_", study, ".RData"))
-  
-  
+
   mipid <- 1028
   refde <- "2020-12-12"
   refyb <- 1900
@@ -75,16 +69,17 @@ for(study in c("asthma", "eczema")){
   dpw$fua <- as.numeric((dpw$td - dpw$tb)/365.25)
   
   # Add first last time of event
-  drw <- group_by(drd, pa, rc) %>% summarise(fi=min(ed)) %>% pivot_wider(id_cols=pa, names_from=rc, values_from=c(fi)) %>% ungroup()
+  drw <- drd %>% group_by(pa, rc) %>% summarise(fi=min(ed)) %>% pivot_wider(id_cols=pa, names_from=rc, values_from=c(fi)) %>% ungroup()
   names(drw)[-1] <- paste0('fi_', names(drw)[-1])
   
   # merge pat data with event data
   dpw <- left_join(dpw[, c('pa', 'mu', 'ca', 'pr', 'can', 'tb', 'td', 'fua')], drw, by="pa")
-  
+
   # Turn end of followup dates and dates of events into ages 
-  for(c in grep('fi_', names(dpw))) dpw[,c] <- as.numeric( dpw[,c] - dpw$tb ) /365.25
+  #for(c in grep('fi_', names(dpw))) dpw[,c] <- as.numeric( dpw[,c] - dpw$tb) /365.25
+  dpw_out <- dpw %>% 
+    mutate_at(grep('fi_', names(dpw)), ~as.numeric((.-tb)/365.25))
   
-  
-  save(dpw, file=paste0(datapath, "datawide_", study, ".RData"))
+  save(dpw_out, file=paste0(datapath, "datawide_", study, ".RData"))
 }
 
