@@ -4,16 +4,11 @@
 
 A project comparing primary care records in people with and without common allergic conditions: eczema and asthma. 
 
-For more information please visit [this website](https://a-henderson91.github.io/MICAC/)
-
-
-
-# RENV
-Run renv::init()
+For more information please visit [this website](https://hendersonad.github.io/MICAC/)
 
 # For analysis only
 ## load data into local repo
-Change filepath to wherever the LSHTM secure server is for you and start running main_multimorbidity.R
+You will need to make an object in a script called `mm-filepaths.R` called `datapath` linked to wherever the data is. The you can run `mm-master.R`
 
 ##
 
