@@ -13,6 +13,7 @@ posted/
 .Rproj.user
 *.pptx
 *.pdf
+!released_outputs/*.pdf
 !out/methods_supplement.pdf
 *.png
 *.docx

@@ -4,6 +4,7 @@
 
 library(lme4)
 library(multcomp)
+library(magrittr)
 library(here)
 source(here::here("mm-filepaths.R"))
 
@@ -87,6 +88,8 @@ jac1 <- function(DW, E1, E2, Z=NULL){
 ###
 
 load(paste0(datapath, "datawide_eczema.RData"))
+dpw <- dpw_out
+rm(dpw_out)
 
 ###
 ###  Calculate edges with JAACCARD distance
@@ -116,7 +119,8 @@ save(edj, file=paste0(datapath,"edges2_jac1_eczema.RData"))
 ###
 
 load(paste0(datapath,"datawide_asthma.RData"))
-
+dpw <- dpw_out
+rm(dpw_out)
 ###
 ###  Calculate edges with JAACCARD distance
 ###

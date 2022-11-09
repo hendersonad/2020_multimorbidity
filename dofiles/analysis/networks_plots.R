@@ -8,7 +8,7 @@ library(tidyr)
 library(here)
 library(viridis)
 library(RColorBrewer)
-library(devtools)
+#library(devtools)
 #devtools::install_github("thomasp85/scico")
 library(scico)
 #devtools::install_github("EmilHvitfeldt/paletteer")
@@ -105,7 +105,7 @@ dendo_plot <- function(data_in, k = 50, j = "m", i = 0, shortnames = FALSE, clus
 }
 
 ## test
-dendo_plot(data_in = edj_eczema, k = 18, j = "m", i = 0)
+#dendo_plot(data_in = edj_eczema, k = 18, j = "m", i = 0)
 
 # network plots -----------------------------------------------------------
 ntwk_nodes <- function(cohort = "asthma"){
@@ -301,17 +301,9 @@ pdf(here::here("out/fig5_dendo_all.pdf"), 14, 14)
 par(mfcol = c(4,4))
   plot_all_dendo(ii = 1, cc = "eczema")
   plot_all_dendo(ii = 0, cc = "eczema",5)
-  plot_all_dendo(ii = 1, cc = "asthma",10)
-  plot_all_dendo(ii = 0, cc = "asthma",14)
+  plot_all_dendo(ii = 1, cc = "asthma",9)
+  plot_all_dendo(ii = 0, cc = "asthma",13)
 dev.off()
-pdf(here::here("out/fig5_dendo_all_Ward.pdf"), 14, 14)
-par(mfcol = c(4,4))
-  plot_all_dendo(ii = 1, cc = "eczema", cluster_method = "ward.D")
-  plot_all_dendo(ii = 0, cc = "eczema",5, cluster_method = "ward.D")
-  plot_all_dendo(ii = 1, cc = "asthma",10, cluster_method = "ward.D")
-  plot_all_dendo(ii = 0, cc = "asthma",14, cluster_method = "ward.D")
-dev.off()
-
 
 
 # all networks ------------------------------------------------------------
@@ -357,6 +349,6 @@ pdf(here::here("out/fig4_ntwk_all.pdf"), 10, 10)
 par(mfcol = c(4,4))
   plot_all_ntwks(ii = 1, cc = "eczema")
   plot_all_ntwks(ii = 0, cc = "eczema",5)
-  plot_all_ntwks(ii = 1, cc = "asthma",10)
-  plot_all_ntwks(ii = 0, cc = "asthma",14)
+  plot_all_ntwks(ii = 1, cc = "asthma",9)
+  plot_all_ntwks(ii = 0, cc = "asthma",13)
 dev.off()
